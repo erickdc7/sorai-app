@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: var(--font-nunito-sans), system-ui, -apple-system, sans-serif;
+  }
+
+  body {
+    @apply bg-background text-text-primary antialiased;
+  }
+
+  h1, h2 {
+    font-family: var(--font-bebas-neue), sans-serif;
+    letter-spacing: 0.04em;
+  }
+
+  * {
+    @apply border-border;
+  }
+}
+
+@layer utilities {
+  .skeleton {
+    @apply bg-surface-alt animate-skeleton-pulse rounded-card;
+  }
+}
+
+/* Modal entrance animation */
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-modal-in {
+  animation: modalIn 0.25s ease-out;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
