@@ -32,6 +32,18 @@
     --color-warning: #F59E0B;
     --color-info: #3B82F6;
 
+    /* ── Status button backgrounds (with alpha) ── */
+    --color-status-watching-bg: rgba(22, 163, 74, 0.8);
+    --color-status-watching-border: rgba(22, 163, 74, 0.5);
+    --color-status-completed-bg: rgba(107, 63, 160, 0.8);
+    --color-status-completed-border: rgba(107, 63, 160, 0.5);
+    --color-status-paused-bg: rgba(245, 158, 11, 0.8);
+    --color-status-paused-border: rgba(245, 158, 11, 0.5);
+    --color-status-dropped-bg: rgba(220, 38, 38, 0.8);
+    --color-status-dropped-border: rgba(220, 38, 38, 0.5);
+    --color-status-planned-bg: rgba(59, 130, 246, 0.8);
+    --color-status-planned-border: rgba(59, 130, 246, 0.5);
+
     /* ── Anime type badges ── */
     --color-type-tv: #6B3FA0;
     --color-type-movie: #1565C0;

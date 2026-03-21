@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import Link from "next/link";
 import {
     Star,
@@ -150,10 +151,14 @@ export default function MyListPage() {
             setList((prev) =>
                 prev.filter((item) => item.mal_id !== deleteTarget.mal_id)
             );
+            toast.success("Removed from your list", {
+                description: `${deleteTarget.anime_title || "Anime"} has been removed.`,
+            });
         } catch {
             // Revert
             const data = await getUserAnimeList(supabase, user.id);
             setList(data);
+            toast.error("Failed to remove from list");
         }
         setIsDeleting(false);
         setDeleteTarget(null);

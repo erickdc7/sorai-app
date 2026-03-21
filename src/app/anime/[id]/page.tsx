@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
     Plus,
     Star,
@@ -54,6 +55,22 @@ const statusColors: Record<string, string> = {
     paused: "var(--color-warning)",
     dropped: "var(--color-error)",
     planned: "var(--color-info)",
+};
+
+const statusBgColors: Record<string, string> = {
+    watching: "var(--color-status-watching-bg)",
+    completed: "var(--color-status-completed-bg)",
+    paused: "var(--color-status-paused-bg)",
+    dropped: "var(--color-status-dropped-bg)",
+    planned: "var(--color-status-planned-bg)",
+};
+
+const statusBorderColors: Record<string, string> = {
+    watching: "var(--color-status-watching-border)",
+    completed: "var(--color-status-completed-border)",
+    paused: "var(--color-status-paused-border)",
+    dropped: "var(--color-status-dropped-border)",
+    planned: "var(--color-status-planned-border)",
 };
 
 /**
@@ -313,8 +330,12 @@ export default function AnimeDetailPage({
 
         try {
             await removeAnimeFromList(supabase, user.id, animeId);
+            toast.success("Removed from your list", {
+                description: `${anime?.title || "Anime"} has been removed.`,
+            });
         } catch {
             setUserListItem(prev);
+            toast.error("Failed to remove from list");
         }
     };
 
@@ -597,9 +618,10 @@ export default function AnimeDetailPage({
                                                 className="flex items-center gap-2 px-4 h-10 rounded-xl text-sm text-white transition-all hover:opacity-90"
                                                 style={{
                                                     backgroundColor:
-                                                        statusColors[userListItem.status] + "CC",
+                                                        statusBgColors[userListItem.status],
                                                     backdropFilter: "blur(4px)",
-                                                    border: `1px solid ${statusColors[userListItem.status]}80`,
+                                                    border: `1px solid`,
+                                                    borderColor: statusBorderColors[userListItem.status],
                                                 }}
                                             >
                                                 <Check size={15} />

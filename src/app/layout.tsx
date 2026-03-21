@@ -52,7 +52,6 @@ export default function RootLayout({
                             },
                         }}
                         richColors
-                        closeButton
                     />
                 </AuthProvider>
             </body>
