@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { TrendingUp, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
+import { TrendingUp, Sparkles, ChevronLeft, ChevronRight, Clock, Film, Tag, Radio, PlayCircle, Tv, Star, CalendarDays } from "lucide-react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import AuthModal from "@/components/AuthModal";
 import AnimeCard from "@/components/AnimeCard";
 import AnimeCardSkeleton from "@/components/AnimeCardSkeleton";
-import { getTopAnime, getSeasonNow, JikanError } from "@/lib/jikan";
+import { getTopAnime, getSeasonNow, getSeasonUpcoming, getSeasonByYear, getAnimeByGenre, JikanError } from "@/lib/jikan";
 import { AnimeCardData } from "@/types/anime";
 
 function mapToCardData(anime: any): AnimeCardData {
@@ -25,7 +26,14 @@ function mapToCardData(anime: any): AnimeCardData {
     };
 }
 
-const PAGE_CONFIG = {
+const SEASON_LABELS: Record<string, string> = {
+    winter: "Winter",
+    spring: "Spring",
+    summer: "Summer",
+    fall: "Fall",
+};
+
+const PAGE_CONFIG: Record<string, { title: string; subtitle: string; icon: React.ReactNode; iconBg: string }> = {
     popular: {
         title: "Most Popular",
         subtitle: "Most popular anime of all time",
@@ -35,15 +43,77 @@ const PAGE_CONFIG = {
     season: {
         title: "In Season",
         subtitle: "Anime currently airing this season",
-        icon: <Sparkles size={18} style={{ color: "#D4700A" }} />,
+        icon: <Sparkles size={18} style={{ color: "var(--color-type-special)" }} />,
+        iconBg: "",
+    },
+    upcoming: {
+        title: "Upcoming Anime",
+        subtitle: "Anime coming soon in the next season",
+        icon: <Clock size={18} className="text-blue-500" />,
+        iconBg: "",
+    },
+    movies: {
+        title: "Top Movies",
+        subtitle: "Highest rated anime movies",
+        icon: <Film size={18} className="text-amber-500" />,
+        iconBg: "",
+    },
+    airing: {
+        title: "Top Airing",
+        subtitle: "Highest rated anime currently on air",
+        icon: <Radio size={18} className="text-green-500" />,
+        iconBg: "",
+    },
+    ona: {
+        title: "ONAs",
+        subtitle: "Original Net Animations — web-exclusive anime",
+        icon: <PlayCircle size={18} className="text-cyan-500" />,
+        iconBg: "",
+    },
+    ova: {
+        title: "OVAs",
+        subtitle: "Original Video Animations — special home-release anime",
+        icon: <Tv size={18} className="text-indigo-500" />,
+        iconBg: "",
+    },
+    special: {
+        title: "Specials",
+        subtitle: "Special anime episodes and one-offs",
+        icon: <Star size={18} className="text-yellow-500" />,
         iconBg: "",
     },
 };
 
 function BrowseContent() {
     const searchParams = useSearchParams();
-    const type = (searchParams.get("type") as "popular" | "season") || "popular";
-    const config = PAGE_CONFIG[type] || PAGE_CONFIG.popular;
+    const type = searchParams.get("type") || "popular";
+    const genre = searchParams.get("genre");
+    const genreId = genre ? parseInt(genre) : null;
+    const seasonYear = searchParams.get("year") ? parseInt(searchParams.get("year")!) : null;
+    const seasonName = searchParams.get("season") || null;
+
+    const seasonArchiveConfig = (type === "season-archive" && seasonYear && seasonName) ? {
+        title: `${SEASON_LABELS[seasonName] || seasonName} ${seasonYear}`,
+        subtitle: `Anime from the ${SEASON_LABELS[seasonName] || seasonName} ${seasonYear} season`,
+        icon: <CalendarDays size={18} className="text-primary" />,
+        iconBg: "bg-primary-light",
+    } : null;
+
+    const GENRE_NAMES: Record<number, string> = {
+        1: "Action", 2: "Adventure", 4: "Comedy", 8: "Drama",
+        10: "Fantasy", 14: "Horror", 22: "Romance", 24: "Sci-Fi",
+        27: "Shounen", 25: "Shoujo", 36: "Slice of Life", 30: "Sports",
+        7: "Mystery", 37: "Supernatural",
+    };
+
+    const genreConfig = genreId ? {
+        title: GENRE_NAMES[genreId] || "Genre",
+        subtitle: `Popular ${GENRE_NAMES[genreId] || ""} anime`,
+        icon: <Tag size={18} className="text-primary" />,
+        iconBg: "bg-primary-light",
+    } : null;
+
+    const config = seasonArchiveConfig || genreConfig || PAGE_CONFIG[type] || PAGE_CONFIG.popular;
 
     const [results, setResults] = useState<AnimeCardData[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -56,10 +126,28 @@ function BrowseContent() {
             setLoading(true);
             setError(null);
             try {
-                const result =
-                    type === "season"
-                        ? await getSeasonNow(12, page)
-                        : await getTopAnime("bypopularity", 12, page);
+                let result;
+                if (genreId) {
+                    result = await getAnimeByGenre(genreId, 12, page);
+                } else if (type === "season-archive" && seasonYear && seasonName) {
+                    result = await getSeasonByYear(seasonYear, seasonName, 12, page);
+                } else if (type === "season") {
+                    result = await getSeasonNow(12, page);
+                } else if (type === "upcoming") {
+                    result = await getSeasonUpcoming(12, page);
+                } else if (type === "movies") {
+                    result = await getTopAnime("bypopularity", 12, page, "movie");
+                } else if (type === "airing") {
+                    result = await getTopAnime("airing", 12, page);
+                } else if (type === "ona") {
+                    result = await getTopAnime("bypopularity", 12, page, "ona");
+                } else if (type === "ova") {
+                    result = await getTopAnime("bypopularity", 12, page, "ova");
+                } else if (type === "special") {
+                    result = await getTopAnime("bypopularity", 12, page, "special");
+                } else {
+                    result = await getTopAnime("bypopularity", 12, page);
+                }
                 setResults(result.data.map(mapToCardData));
                 setTotalPages(result.pagination.last_visible_page);
                 setCurrentPage(result.pagination.current_page);
@@ -72,7 +160,7 @@ function BrowseContent() {
             }
             setLoading(false);
         },
-        [type]
+        [type, genreId, seasonYear, seasonName]
     );
 
     useEffect(() => {
@@ -116,10 +204,10 @@ function BrowseContent() {
                     className="w-9 h-9 rounded-xl text-sm transition-colors"
                     style={{
                         backgroundColor:
-                            currentPage === p ? "#6B3FA0" : "transparent",
-                        color: currentPage === p ? "white" : "#6B7280",
+                            currentPage === p ? "var(--color-primary)" : "transparent",
+                        color: currentPage === p ? "white" : "var(--color-text-secondary)",
                         border:
-                            currentPage === p ? "none" : "1px solid #E5E7EB",
+                            currentPage === p ? "none" : "1px solid var(--color-border)",
                     }}
                 >
                     {p}
@@ -149,7 +237,7 @@ function BrowseContent() {
                         className={`w-8 h-8 rounded-lg flex items-center justify-center ${config.iconBg}`}
                         style={
                             type === "season"
-                                ? { backgroundColor: "#FFF3E0" }
+                                ? { backgroundColor: "var(--color-season-icon-bg)" }
                                 : {}
                         }
                     >
@@ -238,6 +326,7 @@ export default function BrowsePage() {
             >
                 <BrowseContent />
             </Suspense>
+            <Footer />
         </div>
     );
 }

@@ -17,6 +17,7 @@ import {
     AlertCircle,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import AuthModal from "@/components/AuthModal";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 import AnimeHorizontalCarousel, { CarouselAnimeItem } from "@/components/AnimeHorizontalCarousel";
@@ -48,11 +49,11 @@ const statusLabels: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
-    watching: "#16A34A",
-    completed: "#6B3FA0",
-    paused: "#F59E0B",
-    dropped: "#DC2626",
-    planned: "#3B82F6",
+    watching: "var(--color-success)",
+    completed: "var(--color-primary)",
+    paused: "var(--color-warning)",
+    dropped: "var(--color-error)",
+    planned: "var(--color-info)",
 };
 
 /**
@@ -429,7 +430,7 @@ export default function AnimeDetailPage({
                         className="absolute inset-0"
                         style={{
                             background:
-                                "linear-gradient(to top, #F9F9F9 0%, rgba(249,249,249,0) 40%)",
+                                "linear-gradient(to top, var(--color-background) 0%, rgba(249,249,249,0) 40%)",
                         }}
                     />
                 </div>
@@ -447,7 +448,7 @@ export default function AnimeDetailPage({
                             }}
                             className="flex items-center gap-1.5 px-3 h-9 rounded-xl text-sm text-white transition-colors hover:bg-white/10 cursor-pointer"
                             style={{
-                                backgroundColor: "rgba(0,0,0,0.3)",
+                                backgroundColor: "var(--color-overlay-back-btn)",
                                 backdropFilter: "blur(4px)",
                             }}
                         >
@@ -478,7 +479,7 @@ export default function AnimeDetailPage({
                                     <span
                                         className="text-xs px-2.5 py-1 rounded-full text-white"
                                         style={{
-                                            background: "linear-gradient(135deg, #6B3FA0, #9B6FD0)",
+                                            background: "linear-gradient(135deg, var(--color-primary), var(--color-primary-gradient))",
                                         }}
                                     >
                                         #{anime.rank} Ranking
@@ -488,7 +489,7 @@ export default function AnimeDetailPage({
                                     <span
                                         className="text-xs px-2.5 py-1 rounded-full text-white"
                                         style={{
-                                            backgroundColor: "rgba(255,255,255,0.18)",
+                                            backgroundColor: "var(--color-glass-white-18)",
                                             backdropFilter: "blur(4px)",
                                         }}
                                     >
@@ -499,8 +500,8 @@ export default function AnimeDetailPage({
                                     className="text-xs px-2.5 py-1 rounded-full text-white"
                                     style={{
                                         backgroundColor: isAiring
-                                            ? "rgba(22,163,74,0.7)"
-                                            : "rgba(255,255,255,0.18)",
+                                            ? "var(--color-overlay-status-airing)"
+                                            : "var(--color-glass-white-18)",
                                         backdropFilter: "blur(4px)",
                                     }}
                                 >
@@ -546,8 +547,8 @@ export default function AnimeDetailPage({
                                         key={g.mal_id}
                                         className="text-xs px-2.5 py-1 rounded-full text-white border"
                                         style={{
-                                            borderColor: "rgba(255,255,255,0.25)",
-                                            backgroundColor: "rgba(255,255,255,0.1)",
+                                            borderColor: "var(--color-glass-white-25)",
+                                            backgroundColor: "var(--color-glass-white-10)",
                                         }}
                                     >
                                         {g.name}
@@ -567,7 +568,7 @@ export default function AnimeDetailPage({
                                             className="flex items-center gap-2 px-5 h-10 text-white rounded-xl text-sm transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-70"
                                             style={{
                                                 background:
-                                                    "linear-gradient(135deg, #6B3FA0, #8B5FC0)",
+                                                    "linear-gradient(135deg, var(--color-primary), var(--color-primary-medium))",
                                             }}
                                         >
                                             {actionLoading ? (
@@ -620,7 +621,7 @@ export default function AnimeDetailPage({
                                                         className="absolute left-0 mt-2 w-52 bg-white rounded-2xl border border-surface-alt overflow-hidden z-[101]"
                                                         style={{
                                                             top: "100%",
-                                                            boxShadow: "0 16px 40px rgba(0,0,0,0.18)",
+                                                            boxShadow: "var(--shadow-poster)",
                                                         }}
                                                     >
                                                         {Object.entries(statusLabels).map(
@@ -630,12 +631,12 @@ export default function AnimeDetailPage({
                                                                     onClick={() =>
                                                                         handleStatusChange(status as AnimeStatus)
                                                                     }
-                                                                    className="w-full text-left px-4 py-3 text-sm hover:bg-[#F9FAFB] transition-colors flex items-center justify-between"
+                                                                    className="w-full text-left px-4 py-3 text-sm hover:bg-surface-hover transition-colors flex items-center justify-between"
                                                                     style={{
                                                                         color:
                                                                             userListItem.status === status
                                                                                 ? statusColors[status]
-                                                                                : "#374151",
+                                                                                : "var(--color-text-primary)",
                                                                     }}
                                                                 >
                                                                     <div className="flex items-center gap-2">
@@ -678,18 +679,18 @@ export default function AnimeDetailPage({
                                                 }}
                                                 className="flex items-center gap-2 px-4 h-10 rounded-xl text-sm text-white transition-all hover:opacity-90"
                                                 style={{
-                                                    backgroundColor: "rgba(255,255,255,0.15)",
+                                                    backgroundColor: "var(--color-glass-white-15)",
                                                     backdropFilter: "blur(4px)",
-                                                    border: "1px solid rgba(255,255,255,0.3)",
+                                                    border: "1px solid var(--color-glass-white-30)",
                                                 }}
                                             >
                                                 <Star
                                                     size={14}
-                                                    fill={userListItem.score ? "#FBBF24" : "none"}
+                                                    fill={userListItem.score ? "var(--color-star)" : "none"}
                                                     style={{
                                                         color: userListItem.score
-                                                            ? "#FBBF24"
-                                                            : "rgba(255,255,255,0.7)",
+                                                            ? "var(--color-star)"
+                                                            : "var(--color-glass-white-70)",
                                                     }}
                                                 />
                                                 <span>
@@ -714,7 +715,7 @@ export default function AnimeDetailPage({
                                                         className="absolute left-0 mt-2 w-44 bg-white rounded-2xl border border-surface-alt overflow-hidden z-[101] max-h-[360px] overflow-y-auto"
                                                         style={{
                                                             top: "100%",
-                                                            boxShadow: "0 16px 40px rgba(0,0,0,0.18)",
+                                                            boxShadow: "var(--shadow-poster)",
                                                         }}
                                                     >
                                                         {!userListItem.score && (
@@ -732,9 +733,9 @@ export default function AnimeDetailPage({
                                                                 <button
                                                                     key={score}
                                                                     onClick={() => handleScoreChange(score)}
-                                                                    className="w-full text-left px-4 py-2 text-sm transition-colors flex items-center gap-2 hover:bg-[#F9FAFB]"
+                                                                    className="w-full text-left px-4 py-2 text-sm transition-colors flex items-center gap-2 hover:bg-surface-hover"
                                                                     style={{
-                                                                        color: isSelected ? "#6B3FA0" : "#374151",
+                                                                        color: isSelected ? "var(--color-primary)" : "var(--color-text-primary)",
                                                                     }}
                                                                 >
                                                                     <div className="flex gap-0.5">
@@ -744,14 +745,14 @@ export default function AnimeDetailPage({
                                                                                 size={10}
                                                                                 fill={
                                                                                     si < Math.ceil(score / 2)
-                                                                                        ? "#FBBF24"
+                                                                                        ? "var(--color-star)"
                                                                                         : "none"
                                                                                 }
                                                                                 style={{
                                                                                     color:
                                                                                         si < Math.ceil(score / 2)
-                                                                                            ? "#FBBF24"
-                                                                                            : "#D1D5DB",
+                                                                                            ? "var(--color-star)"
+                                                                                            : "var(--color-text-disabled)",
                                                                                 }}
                                                                             />
                                                                         ))}
@@ -798,7 +799,7 @@ export default function AnimeDetailPage({
                                 </h2>
                                 <div
                                     className="p-5 rounded-2xl bg-white"
-                                    style={{ boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}
+                                    style={{ boxShadow: "var(--shadow-info-card)" }}
                                 >
                                     <p className="text-gray-600 leading-relaxed text-sm">
                                         {anime.synopsis}
@@ -817,7 +818,7 @@ export default function AnimeDetailPage({
                             {anime.trailer?.embed_url ? (
                                 <div
                                     className="rounded-2xl overflow-hidden bg-white"
-                                    style={{ boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}
+                                    style={{ boxShadow: "var(--shadow-info-card)" }}
                                 >
                                     <div className="relative aspect-video">
                                         <iframe
@@ -832,7 +833,7 @@ export default function AnimeDetailPage({
                             ) : anime.trailer?.youtube_id ? (
                                 <div
                                     className="rounded-2xl overflow-hidden bg-white"
-                                    style={{ boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}
+                                    style={{ boxShadow: "var(--shadow-info-card)" }}
                                 >
                                     <div className="relative aspect-video">
                                         <iframe
@@ -847,7 +848,7 @@ export default function AnimeDetailPage({
                             ) : (
                                 <div
                                     className="rounded-2xl overflow-hidden bg-white flex items-center justify-center"
-                                    style={{ boxShadow: "0 1px 8px rgba(0,0,0,0.05)", aspectRatio: "16/9" }}
+                                    style={{ boxShadow: "var(--shadow-info-card)", aspectRatio: "16/9" }}
                                 >
                                     <div className="text-center">
                                         <Play size={32} className="text-gray-300 mx-auto mb-2" />
@@ -875,7 +876,7 @@ export default function AnimeDetailPage({
                                                 key={i}
                                                 className="flex items-center gap-3 p-3 bg-white rounded-2xl"
                                                 style={{
-                                                    boxShadow: "0 1px 8px rgba(0,0,0,0.05)",
+                                                    boxShadow: "var(--shadow-info-card)",
                                                 }}
                                             >
                                                 <img
@@ -912,16 +913,16 @@ export default function AnimeDetailPage({
                                 </h2>
                                 <div
                                     className="bg-white rounded-2xl overflow-hidden"
-                                    style={{ boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}
+                                    style={{ boxShadow: "var(--shadow-info-card)" }}
                                 >
                                     {displayedEpisodes.map((ep: any, i: number) => (
                                         <div
                                             key={ep.mal_id}
-                                            className="flex items-center gap-4 px-5 py-3.5 hover:bg-[#F9FAFB] transition-colors"
+                                            className="flex items-center gap-4 px-5 py-3.5 hover:bg-surface-hover transition-colors"
                                             style={{
                                                 borderBottom:
                                                     i < displayedEpisodes.length - 1
-                                                        ? "1px solid #F3F4F6"
+                                                        ? "1px solid var(--color-surface-alt)"
                                                         : "none",
                                             }}
                                         >
@@ -978,7 +979,7 @@ export default function AnimeDetailPage({
                         {/* Info card */}
                         <div
                             className="bg-white rounded-2xl p-5"
-                            style={{ boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}
+                            style={{ boxShadow: "var(--shadow-info-card)" }}
                         >
                             <h3 className="text-text-primary mb-4 text-sm font-semibold">
                                 Information
@@ -1014,7 +1015,7 @@ export default function AnimeDetailPage({
                             anime.theme?.endings?.length > 0) && (
                                 <div
                                     className="bg-white rounded-2xl p-5"
-                                    style={{ boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}
+                                    style={{ boxShadow: "var(--shadow-info-card)" }}
                                 >
                                     <h3 className="text-text-primary mb-4 text-sm font-semibold flex items-center gap-2">
                                         <Music size={14} className="text-text-secondary" />
@@ -1032,8 +1033,8 @@ export default function AnimeDetailPage({
                                                     >
                                                         <Play
                                                             size={10}
-                                                            className="text-primary"
-                                                            fill="#6B3FA0"
+                                                            className="text-primary shrink-0"
+                                                            fill="var(--color-primary)"
                                                         />
                                                         <span className="text-gray-700">{song}</span>
                                                     </div>
@@ -1053,8 +1054,8 @@ export default function AnimeDetailPage({
                                                     >
                                                         <Play
                                                             size={10}
-                                                            className="text-text-secondary"
-                                                            fill="#6B7280"
+                                                            className="text-text-secondary shrink-0"
+                                                            fill="var(--color-text-secondary)"
                                                         />
                                                         <span className="text-gray-700">{song}</span>
                                                     </div>
@@ -1074,6 +1075,7 @@ export default function AnimeDetailPage({
                 onConfirm={handleRemove}
                 animeTitle={anime.title}
             />
+            <Footer />
         </div>
     );
 }

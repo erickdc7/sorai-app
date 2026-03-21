@@ -100,7 +100,7 @@ export default function HeroCarousel({ animes }: HeroCarouselProps) {
                             <span
                                 className="text-xs px-2.5 py-1 rounded-full text-white"
                                 style={{
-                                    background: "linear-gradient(135deg, #6B3FA0, #9B6FD0)",
+                                    background: "linear-gradient(135deg, var(--color-primary), var(--color-primary-gradient))",
                                 }}
                             >
                                 <Star size={12} fill="currentColor" className="inline" /> {anime.score}
@@ -162,8 +162,8 @@ export default function HeroCarousel({ animes }: HeroCarouselProps) {
                                 key={genre}
                                 className="text-xs px-2.5 py-1 rounded-full text-white/90 border"
                                 style={{
-                                    borderColor: "rgba(255,255,255,0.25)",
-                                    backgroundColor: "rgba(255,255,255,0.1)",
+                                    borderColor: "var(--color-glass-white-25)",
+                                    backgroundColor: "var(--color-glass-white-10)",
                                     backdropFilter: "blur(4px)",
                                 }}
                             >
@@ -194,7 +194,7 @@ export default function HeroCarousel({ animes }: HeroCarouselProps) {
                             href={`/anime/${anime.mal_id}`}
                             className="flex items-center gap-2 px-5 h-11 text-white rounded-xl transition-all hover:opacity-90 hover:shadow-lg active:scale-[0.98] text-sm"
                             style={{
-                                background: "linear-gradient(135deg, #6B3FA0, #8B5FC0)",
+                                background: "linear-gradient(135deg, var(--color-primary), var(--color-primary-medium))",
                             }}
                         >
                             <Play size={16} fill="currentColor" />
@@ -216,7 +216,7 @@ export default function HeroCarousel({ animes }: HeroCarouselProps) {
                                 width: i === current ? "24px" : "8px",
                                 height: "8px",
                                 backgroundColor:
-                                    i === current ? "#6B3FA0" : "rgba(255,255,255,0.5)",
+                                    i === current ? "var(--color-primary)" : "var(--color-glass-white-50)",
                             }}
                         />
                     ))}

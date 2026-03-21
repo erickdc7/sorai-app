@@ -3,6 +3,90 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* ── Primary ── */
+    --color-primary: #6B3FA0;
+    --color-primary-hover: #5a3388;
+    --color-primary-light: #F3EBF9;
+    --color-primary-gradient: #9B6FD0;
+    --color-primary-dark: #4A2470;
+    --color-primary-medium: #8B5FC0;
+
+    /* ── Background & Surface ── */
+    --color-background: #F9F9F9;
+    --color-surface: #FFFFFF;
+    --color-surface-alt: #F3F4F6;
+    --color-input-bg: #F9FAFB;
+
+    /* ── Text ── */
+    --color-text-primary: #111827;
+    --color-text-secondary: #6B7280;
+    --color-text-disabled: #D1D5DB;
+
+    /* ── Border ── */
+    --color-border: #E5E7EB;
+
+    /* ── Feedback ── */
+    --color-error: #DC2626;
+    --color-success: #16A34A;
+    --color-warning: #F59E0B;
+    --color-info: #3B82F6;
+
+    /* ── Anime type badges ── */
+    --color-type-tv: #6B3FA0;
+    --color-type-movie: #1565C0;
+    --color-type-ova: #2E7D32;
+    --color-type-special: #D4700A;
+    --color-type-ona: #0097A7;
+    --color-type-music: #E91E63;
+
+    /* ── Accent / misc ── */
+    --color-star: #FBBF24;
+    --color-season-icon-bg: #FFF3E0;
+
+    /* ── Footer ── */
+    --color-footer-bg: #1A1625;
+    --color-footer-heading: #9B6FD0;
+
+    /* ── Scrollbar ── */
+    --color-scrollbar-thumb: #d1d5db;
+    --color-scrollbar-thumb-hover: #9ca3af;
+
+    /* ── Overlay / alpha ── */
+    --color-overlay-light: rgba(0, 0, 0, 0.5);
+    --color-overlay-medium: rgba(0, 0, 0, 0.6);
+    --color-overlay-badge: rgba(0, 0, 0, 0.55);
+    --color-glass-white-06: rgba(255, 255, 255, 0.06);
+    --color-glass-white-08: rgba(255, 255, 255, 0.08);
+    --color-glass-white-10: rgba(255, 255, 255, 0.1);
+    --color-glass-white-15: rgba(255, 255, 255, 0.15);
+    --color-glass-white-18: rgba(255, 255, 255, 0.18);
+    --color-glass-white-25: rgba(255, 255, 255, 0.25);
+    --color-glass-white-30: rgba(255, 255, 255, 0.3);
+    --color-glass-white-35: rgba(255, 255, 255, 0.35);
+    --color-glass-white-50: rgba(255, 255, 255, 0.5);
+    --color-glass-white-70: rgba(255, 255, 255, 0.7);
+    --color-glass-white-90: rgba(255, 255, 255, 0.9);
+    --color-glass-white-97: rgba(255, 255, 255, 0.97);
+    --color-overlay-back-btn: rgba(0, 0, 0, 0.3);
+    --color-overlay-status-airing: rgba(22, 163, 74, 0.7);
+    --color-hero-gradient-right: linear-gradient(to right, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.45) 60%, rgba(0,0,0,0.1) 100%);
+    --color-hero-gradient-bottom: linear-gradient(to top, #F9F9F9 0%, rgba(249,249,249,0) 40%);
+    --color-surface-hover: #F9FAFB;
+
+    /* ── Shadows ── */
+    --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.06);
+    --shadow-card-hover: 0 8px 24px rgba(107, 63, 160, 0.15);
+    --shadow-navbar-scrolled: 0 1px 20px rgba(0, 0, 0, 0.08);
+    --shadow-navbar: 0 1px 0 rgba(0, 0, 0, 0.06);
+    --shadow-soft: 0 1px 6px rgba(0, 0, 0, 0.05);
+    --shadow-info-card: 0 1px 8px rgba(0, 0, 0, 0.05);
+    --shadow-dropdown: 0 8px 24px rgba(0, 0, 0, 0.12);
+    --shadow-poster: 0 16px 40px rgba(0, 0, 0, 0.18);
+    --shadow-carousel-hover: 0 4px 12px rgba(107, 63, 160, 0.12);
+    --shadow-delete-hover: 0 2px 8px rgba(220, 38, 38, 0.3);
+  }
+
   html {
     font-family: var(--font-nunito-sans), system-ui, -apple-system, sans-serif;
   }
@@ -53,10 +137,10 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: var(--color-scrollbar-thumb);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: var(--color-scrollbar-thumb-hover);
 }

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { TrendingUp, Sparkles, ArrowRight, BookOpen } from "lucide-react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import AuthModal from "@/components/AuthModal";
 import HeroCarousel from "@/components/HeroCarousel";
 import AnimeCard from "@/components/AnimeCard";
@@ -109,6 +110,39 @@ export default function HomePage() {
                     </div>
                 )}
 
+                {/* Season */}
+                <section className="mb-12">
+                    <div className="flex items-center justify-between mb-5">
+                        <div className="flex items-center gap-2">
+                            <div
+                                className="w-7 h-7 rounded-lg flex items-center justify-center"
+                                style={{ backgroundColor: "var(--color-season-icon-bg)" }}
+                            >
+                                <Sparkles size={14} style={{ color: "var(--color-type-special)" }} />
+                            </div>
+                            <h2 className="text-text-primary text-[1.5rem] font-semibold">
+                                In Season
+                            </h2>
+                        </div>
+                        <Link
+                            href="/browse?type=season"
+                            className="flex items-center gap-1 text-sm text-primary transition-all hover:gap-2"
+                        >
+                            View all <ArrowRight size={14} />
+                        </Link>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                        {loading
+                            ? Array.from({ length: 12 }).map((_, i) => (
+                                <AnimeCardSkeleton key={i} />
+                            ))
+                            : season.map((anime) => (
+                                <AnimeCard key={anime.mal_id} anime={anime} />
+                            ))}
+                    </div>
+                </section>
+
                 {/* Popular */}
                 <section className="mb-12">
                     <div className="flex items-center justify-between mb-5">
@@ -139,52 +173,19 @@ export default function HomePage() {
                     </div>
                 </section>
 
-                {/* Season */}
-                <section className="mb-12">
-                    <div className="flex items-center justify-between mb-5">
-                        <div className="flex items-center gap-2">
-                            <div
-                                className="w-7 h-7 rounded-lg flex items-center justify-center"
-                                style={{ backgroundColor: "#FFF3E0" }}
-                            >
-                                <Sparkles size={14} style={{ color: "#D4700A" }} />
-                            </div>
-                            <h2 className="text-text-primary text-[1.5rem] font-semibold">
-                                In Season
-                            </h2>
-                        </div>
-                        <Link
-                            href="/browse?type=season"
-                            className="flex items-center gap-1 text-sm text-primary transition-all hover:gap-2"
-                        >
-                            View all <ArrowRight size={14} />
-                        </Link>
-                    </div>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                        {loading
-                            ? Array.from({ length: 12 }).map((_, i) => (
-                                <AnimeCardSkeleton key={i} />
-                            ))
-                            : season.map((anime) => (
-                                <AnimeCard key={anime.mal_id} anime={anime} />
-                            ))}
-                    </div>
-                </section>
-
                 {/* CTA Banner */}
                 {!isLoggedIn && (
                     <section>
                         <div
                             className="rounded-2xl overflow-hidden relative p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-6"
                             style={{
-                                background: "linear-gradient(135deg, #6B3FA0 0%, #4A2470 100%)",
+                                background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%)",
                             }}
                         >
                             <div
                                 className="absolute top-0 right-0 w-72 h-72 rounded-full pointer-events-none"
                                 style={{
-                                    backgroundColor: "rgba(255,255,255,0.08)",
+                                    backgroundColor: "var(--color-glass-white-08)",
                                     transform: "translate(35%, -35%)",
                                 }}
                             />
@@ -216,7 +217,7 @@ export default function HomePage() {
                                 <button
                                     onClick={() => setOpenModal("login")}
                                     className="px-6 h-11 rounded-xl text-sm text-white transition-all hover:bg-white/10 active:scale-[0.98]"
-                                    style={{ border: "1px solid rgba(255,255,255,0.35)" }}
+                                    style={{ border: "1px solid var(--color-glass-white-35)" }}
                                 >
                                     Sign in
                                 </button>
@@ -225,6 +226,7 @@ export default function HomePage() {
                     </section>
                 )}
             </main>
+            <Footer />
         </div>
     );
 }

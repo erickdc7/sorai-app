@@ -114,7 +114,7 @@ export default function AuthModal() {
         <div
             className="fixed inset-0 z-[100] flex items-center justify-center p-4"
             style={{
-                backgroundColor: "rgba(0,0,0,0.6)",
+                backgroundColor: "var(--color-overlay-medium)",
                 backdropFilter: "blur(4px)",
             }}
             onClick={(e) => e.target === e.currentTarget && handleClose()}
@@ -124,7 +124,7 @@ export default function AuthModal() {
                 <div
                     className="h-2 w-full"
                     style={{
-                        background: "linear-gradient(90deg, #6B3FA0, #9B6FD0)",
+                        background: "linear-gradient(90deg, var(--color-primary), var(--color-primary-gradient))",
                     }}
                 />
 
@@ -183,7 +183,7 @@ export default function AuthModal() {
                                         value={usernameField}
                                         onChange={(e) => setUsernameField(e.target.value)}
                                         placeholder="my_username"
-                                        className="w-full h-11 pl-9 pr-4 bg-[#F9FAFB] rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 text-text-primary placeholder-gray-400 transition-colors"
+                                        className="w-full h-11 pl-9 pr-4 bg-surface-hover rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 text-text-primary placeholder-gray-400 transition-colors"
                                         required
                                     />
                                 </div>
@@ -205,7 +205,7 @@ export default function AuthModal() {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     placeholder="email@example.com"
-                                    className="w-full h-11 pl-9 pr-4 bg-[#F9FAFB] rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 text-text-primary placeholder-gray-400 transition-colors"
+                                    className="w-full h-11 pl-9 pr-4 bg-surface-hover rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 text-text-primary placeholder-gray-400 transition-colors"
                                     required
                                 />
                             </div>
@@ -226,7 +226,7 @@ export default function AuthModal() {
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="••••••••"
-                                    className="w-full h-11 pl-9 pr-10 bg-[#F9FAFB] rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 text-text-primary placeholder-gray-400 transition-colors"
+                                    className="w-full h-11 pl-9 pr-10 bg-surface-hover rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 text-text-primary placeholder-gray-400 transition-colors"
                                     required
                                 />
                                 <button
@@ -255,7 +255,7 @@ export default function AuthModal() {
                                         value={confirmPassword}
                                         onChange={(e) => setConfirmPassword(e.target.value)}
                                         placeholder="Re-enter your password"
-                                        className="w-full h-11 pl-9 pr-4 bg-[#F9FAFB] rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 text-text-primary placeholder-gray-400 transition-colors"
+                                        className="w-full h-11 pl-9 pr-4 bg-surface-hover rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 text-text-primary placeholder-gray-400 transition-colors"
                                         required
                                     />
                                 </div>
@@ -268,8 +268,8 @@ export default function AuthModal() {
                             className="w-full h-11 text-white rounded-xl transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-70 flex items-center justify-center gap-2"
                             style={{
                                 background: isLoading
-                                    ? "#9B6FD0"
-                                    : "linear-gradient(135deg, #6B3FA0, #8B5FC0)",
+                                    ? "var(--color-primary-gradient)"
+                                    : "linear-gradient(135deg, var(--color-primary), var(--color-primary-medium))",
                             }}
                         >
                             {isLoading ? (

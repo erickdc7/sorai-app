@@ -5,12 +5,12 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 
 const typeColors: Record<string, string> = {
-    TV: "#6B3FA0",
-    Movie: "#1565C0",
-    OVA: "#2E7D32",
-    Special: "#D4700A",
-    ONA: "#0097A7",
-    Music: "#E91E63",
+    TV: "var(--color-type-tv)",
+    Movie: "var(--color-type-movie)",
+    OVA: "var(--color-type-ova)",
+    Special: "var(--color-type-special)",
+    ONA: "var(--color-type-ona)",
+    Music: "var(--color-type-music)",
 };
 
 export interface CarouselAnimeItem {
@@ -77,8 +77,8 @@ export default function AnimeHorizontalCarousel({ title, icon, items }: Props) {
                         disabled={!canScrollLeft}
                         className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
                         style={{
-                            backgroundColor: canScrollLeft ? "#F3EBF9" : "#F3F4F6",
-                            color: canScrollLeft ? "#6B3FA0" : "#D1D5DB",
+                            backgroundColor: canScrollLeft ? "var(--color-primary-light)" : "var(--color-surface-alt)",
+                            color: canScrollLeft ? "var(--color-primary)" : "var(--color-text-disabled)",
                             cursor: canScrollLeft ? "pointer" : "default",
                         }}
                     >
@@ -89,8 +89,8 @@ export default function AnimeHorizontalCarousel({ title, icon, items }: Props) {
                         disabled={!canScrollRight}
                         className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
                         style={{
-                            backgroundColor: canScrollRight ? "#F3EBF9" : "#F3F4F6",
-                            color: canScrollRight ? "#6B3FA0" : "#D1D5DB",
+                            backgroundColor: canScrollRight ? "var(--color-primary-light)" : "var(--color-surface-alt)",
+                            color: canScrollRight ? "var(--color-primary)" : "var(--color-text-disabled)",
                             cursor: canScrollRight ? "pointer" : "default",
                         }}
                     >
@@ -117,14 +117,14 @@ export default function AnimeHorizontalCarousel({ title, icon, items }: Props) {
                     >
                         <div
                             className="rounded-2xl overflow-hidden bg-white transition-all duration-300  "
-                            style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
+                            style={{ boxShadow: "var(--shadow-card)" }}
                             onMouseEnter={(e) =>
                             (e.currentTarget.style.boxShadow =
-                                "0 4px 12px rgba(107,63,160,0.12)")
+                                "var(--shadow-carousel-hover)")
                             }
                             onMouseLeave={(e) =>
                             (e.currentTarget.style.boxShadow =
-                                "0 2px 8px rgba(0,0,0,0.06)")
+                                "var(--shadow-card)")
                             }
                         >
                             <div className="relative aspect-[2/3] overflow-hidden bg-surface-alt">
@@ -138,9 +138,9 @@ export default function AnimeHorizontalCarousel({ title, icon, items }: Props) {
                                     <div
                                         className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-md text-xs"
                                         style={{
-                                            backgroundColor: "rgba(0,0,0,0.55)",
+                                            backgroundColor: "var(--color-overlay-badge)",
                                             backdropFilter: "blur(4px)",
-                                            color: "#FBBF24",
+                                            color: "var(--color-star)",
                                         }}
                                     >
                                         <Star size={10} fill="currentColor" />
@@ -151,7 +151,7 @@ export default function AnimeHorizontalCarousel({ title, icon, items }: Props) {
                                     <div
                                         className="absolute top-2 right-2 px-2 py-0.5 rounded-md text-white text-xs font-medium"
                                         style={{
-                                            backgroundColor: typeColors[item.type] || "#6B3FA0",
+                                            backgroundColor: typeColors[item.type] || "var(--color-primary)",
                                         }}
                                     >
                                         {item.type}
@@ -160,8 +160,8 @@ export default function AnimeHorizontalCarousel({ title, icon, items }: Props) {
                             </div>
                             <div className="p-3">
                                 <h3
-                                    className="text-text-primary truncate text-[0.85rem] leading-snug font-medium mb-1 uppercase"
-                                    style={{ fontFamily: "var(--font-bebas-neue), sans-serif", letterSpacing: "0.04em" }}
+                                    className="text-text-primary truncate text-[1.15rem] leading-snug font-medium mb-1 uppercase"
+                                    style={{ fontFamily: "var(--font-bebas-neue), sans-serif", letterSpacing: "0.01em" }}
                                 >
                                     {item.title}
                                 </h3>

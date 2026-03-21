@@ -15,6 +15,7 @@ import {
     X,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import AuthModal from "@/components/AuthModal";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 import { useAuth } from "@/context/AuthContext";
@@ -36,11 +37,11 @@ const statusLabels: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
-    watching: "#16A34A",
-    completed: "#6B3FA0",
-    paused: "#F59E0B",
-    dropped: "#DC2626",
-    planned: "#3B82F6",
+    watching: "var(--color-success)",
+    completed: "var(--color-primary)",
+    paused: "var(--color-warning)",
+    dropped: "var(--color-error)",
+    planned: "var(--color-info)",
 };
 
 const statusOrder: AnimeStatus[] = [
@@ -203,8 +204,8 @@ export default function MyListPage() {
                             onClick={() => setViewMode("grid")}
                             className="flex items-center gap-1.5 px-3 h-8 rounded-lg text-sm transition-colors"
                             style={{
-                                backgroundColor: viewMode === "grid" ? "#6B3FA0" : "transparent",
-                                color: viewMode === "grid" ? "white" : "#6B7280",
+                                backgroundColor: viewMode === "grid" ? "var(--color-primary)" : "transparent",
+                                color: viewMode === "grid" ? "white" : "var(--color-text-secondary)",
                             }}
                         >
                             <Grid3X3 size={14} />
@@ -214,8 +215,8 @@ export default function MyListPage() {
                             onClick={() => setViewMode("list")}
                             className="flex items-center gap-1.5 px-3 h-8 rounded-lg text-sm transition-colors"
                             style={{
-                                backgroundColor: viewMode === "list" ? "#6B3FA0" : "transparent",
-                                color: viewMode === "list" ? "white" : "#6B7280",
+                                backgroundColor: viewMode === "list" ? "var(--color-primary)" : "transparent",
+                                color: viewMode === "list" ? "white" : "var(--color-text-secondary)",
                             }}
                         >
                             <LayoutList size={14} />
@@ -353,6 +354,7 @@ export default function MyListPage() {
                 animeTitle={deleteTarget?.anime_title || ""}
                 isDeleting={isDeleting}
             />
+            <Footer />
         </div>
     );
 }
@@ -370,13 +372,13 @@ function GridCard({
             <Link href={`/anime/${item.mal_id}`}>
                 <div
                     className="rounded-2xl overflow-hidden bg-white transition-all duration-300 "
-                    style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
+                    style={{ boxShadow: "var(--shadow-card)" }}
                     onMouseEnter={(e) =>
                     (e.currentTarget.style.boxShadow =
-                        "0 8px 24px rgba(107,63,160,0.15)")
+                        "var(--shadow-card-hover)")
                     }
                     onMouseLeave={(e) =>
-                        (e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.06)")
+                        (e.currentTarget.style.boxShadow = "var(--shadow-card)")
                     }
                 >
                     <div className="relative aspect-[2/3] overflow-hidden bg-surface-alt">
@@ -396,9 +398,9 @@ function GridCard({
                             <div
                                 className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-md text-xs"
                                 style={{
-                                    backgroundColor: "rgba(0,0,0,0.55)",
+                                    backgroundColor: "var(--color-overlay-badge)",
                                     backdropFilter: "blur(4px)",
-                                    color: "#FBBF24",
+                                    color: "var(--color-star)",
                                 }}
                             >
                                 <Star size={10} fill="currentColor" />
@@ -408,8 +410,8 @@ function GridCard({
                     </div>
                     <div className="p-3">
                         <h3
-                            className="text-text-primary truncate text-[0.85rem] leading-snug font-medium uppercase"
-                            style={{ fontFamily: "var(--font-bebas-neue), sans-serif", letterSpacing: "0.04em" }}
+                            className="text-text-primary truncate text-[1.15rem] leading-snug font-medium uppercase"
+                            style={{ fontFamily: "var(--font-bebas-neue), sans-serif", letterSpacing: "0.01em" }}
                         >
                             {item.anime_title}
                         </h3>
@@ -430,18 +432,18 @@ function GridCard({
                     top: "auto",
                     right: "8px",
                     bottom: "52px",
-                    backgroundColor: "rgba(255,255,255,0.9)",
+                    backgroundColor: "var(--color-glass-white-90)",
                     backdropFilter: "blur(4px)",
                 }}
                 onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "#DC2626";
+                    e.currentTarget.style.backgroundColor = "var(--color-error)";
                     e.currentTarget.style.color = "#FFFFFF";
-                    e.currentTarget.style.boxShadow = "0 2px 8px rgba(220,38,38,0.3)";
+                    e.currentTarget.style.boxShadow = "var(--shadow-delete-hover)";
                     e.currentTarget.style.transform = "scale(1.1)";
                 }}
                 onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.9)";
-                    e.currentTarget.style.color = "#9CA3AF";
+                    e.currentTarget.style.backgroundColor = "var(--color-glass-white-90)";
+                    e.currentTarget.style.color = "var(--color-text-secondary)";
                     e.currentTarget.style.boxShadow = "none";
                     e.currentTarget.style.transform = "scale(1)";
                 }}
@@ -474,7 +476,7 @@ function ListCard({
     return (
         <div
             className="flex items-center gap-4 bg-white rounded-2xl p-3 pr-5 hover:shadow-md transition-all"
-            style={{ boxShadow: "0 1px 6px rgba(0,0,0,0.05)" }}
+            style={{ boxShadow: "var(--shadow-soft)" }}
         >
             <Link href={`/anime/${item.mal_id}`} className="shrink-0">
                 <img
@@ -489,7 +491,7 @@ function ListCard({
                 <Link href={`/anime/${item.mal_id}`}>
                     <h4
                         className="text-text-primary font-medium text-sm truncate hover:text-primary transition-colors"
-                        style={{ fontFamily: "var(--font-bebas-neue), sans-serif", letterSpacing: "0.04em" }}
+                        style={{ fontFamily: "var(--font-bebas-neue), sans-serif", letterSpacing: "0.01em" }}
                     >
                         {item.anime_title}
                     </h4>
@@ -528,7 +530,7 @@ function ListCard({
                         />
                         <div
                             className="absolute right-0 mt-1 w-44 bg-white rounded-xl border border-surface-alt overflow-hidden z-20"
-                            style={{ boxShadow: "0 8px 24px rgba(0,0,0,0.12)" }}
+                            style={{ boxShadow: "var(--shadow-dropdown)" }}
                         >
                             {Object.entries(statusLabels).map(([status, label]) => (
                                 <button
@@ -537,10 +539,10 @@ function ListCard({
                                         onStatusChange(item.mal_id, status as AnimeStatus);
                                         setShowStatus(false);
                                     }}
-                                    className="w-full text-left px-3 py-2 text-xs hover:bg-[#F9FAFB] flex items-center gap-2 transition-colors"
+                                    className="w-full text-left px-3 py-2 text-xs hover:bg-surface-hover flex items-center gap-2 transition-colors"
                                     style={{
                                         color:
-                                            item.status === status ? statusColors[status] : "#374151",
+                                            item.status === status ? statusColors[status] : "var(--color-text-primary)",
                                         fontWeight: item.status === status ? 600 : 400,
                                     }}
                                 >
@@ -570,8 +572,8 @@ function ListCard({
                 >
                     <Star
                         size={12}
-                        fill={item.score ? "#FBBF24" : "none"}
-                        style={{ color: item.score ? "#FBBF24" : "#D1D5DB" }}
+                        fill={item.score ? "var(--color-star)" : "none"}
+                        style={{ color: item.score ? "var(--color-star)" : "var(--color-text-disabled)" }}
                     />
                     {item.score ? `${item.score}/10` : "—"}
                 </button>
@@ -584,7 +586,7 @@ function ListCard({
                         />
                         <div
                             className="absolute right-0 mt-1 w-36 bg-white rounded-xl border border-surface-alt overflow-hidden z-20 max-h-[300px] overflow-y-auto"
-                            style={{ boxShadow: "0 8px 24px rgba(0,0,0,0.12)" }}
+                            style={{ boxShadow: "var(--shadow-dropdown)" }}
                         >
                             {[...Array(10)].map((_, i) => {
                                 const score = i + 1;
@@ -593,16 +595,16 @@ function ListCard({
                                     <button
                                         key={score}
                                         onClick={() => onScoreChange(item.mal_id, score)}
-                                        className="w-full text-left px-3 py-2 text-xs hover:bg-[#F9FAFB] flex items-center gap-2 transition-colors"
+                                        className="w-full text-left px-3 py-2 text-xs hover:bg-surface-hover flex items-center gap-2 transition-colors"
                                         style={{
-                                            color: isSelected ? "#6B3FA0" : "#374151",
+                                            color: isSelected ? "var(--color-primary)" : "var(--color-text-primary)",
                                             fontWeight: isSelected ? 600 : 400,
                                         }}
                                     >
                                         <Star
                                             size={10}
-                                            fill="#FBBF24"
-                                            style={{ color: "#FBBF24" }}
+                                            fill="var(--color-star)"
+                                            style={{ color: "var(--color-star)" }}
                                         />
                                         {score}
                                         <span className="text-gray-400">/10</span>

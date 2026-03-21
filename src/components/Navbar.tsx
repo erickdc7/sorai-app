@@ -39,10 +39,10 @@ export default function Navbar() {
             <nav
                 className="sticky top-0 z-50 transition-all duration-300"
                 style={{
-                    backgroundColor: scrolled ? "rgba(255,255,255,0.97)" : "white",
+                    backgroundColor: scrolled ? "var(--color-glass-white-97)" : "white",
                     boxShadow: scrolled
-                        ? "0 1px 20px rgba(0,0,0,0.08)"
-                        : "0 1px 0 rgba(0,0,0,0.06)",
+                        ? "var(--shadow-navbar-scrolled)"
+                        : "var(--shadow-navbar)",
                     backdropFilter: scrolled ? "blur(12px)" : "none",
                 }}
             >
@@ -91,7 +91,7 @@ export default function Navbar() {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Search anime..."
-                                className="w-full h-9 pl-9 pr-4 rounded-xl border border-border bg-[#F9FAFB] text-sm text-text-primary placeholder-gray-400 focus:outline-none focus:border-primary transition-colors"
+                                className="w-full h-9 pl-9 pr-4 rounded-xl border border-border bg-surface-hover text-sm text-text-primary placeholder-gray-400 focus:outline-none focus:border-primary transition-colors"
                             />
                         </div>
                     </form>
@@ -110,7 +110,7 @@ export default function Navbar() {
                                     onClick={() => setOpenModal("register")}
                                     className="px-4 h-9 text-sm text-white rounded-xl transition-all hover:opacity-90 hover:shadow-md"
                                     style={{
-                                        background: "linear-gradient(135deg, #6B3FA0, #8B5FC0)",
+                                        background: "linear-gradient(135deg, var(--color-primary), var(--color-primary-medium))",
                                     }}
                                 >
                                     Sign up
@@ -147,7 +147,7 @@ export default function Navbar() {
                                             <Link
                                                 href="/my-list"
                                                 onClick={() => setShowUserMenu(false)}
-                                                className="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 hover:bg-[#F9FAFB] transition-colors"
+                                                className="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 hover:bg-surface-hover transition-colors"
                                             >
                                                 <List size={16} className="text-text-secondary" />
                                                 My List
@@ -196,7 +196,7 @@ export default function Navbar() {
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     placeholder="Search anime..."
-                                    className="w-full h-10 pl-9 pr-4 rounded-xl border border-border bg-[#F9FAFB] text-sm text-text-primary placeholder-gray-400 focus:outline-none focus:border-primary"
+                                    className="w-full h-10 pl-9 pr-4 rounded-xl border border-border bg-surface-hover text-sm text-text-primary placeholder-gray-400 focus:outline-none focus:border-primary"
                                 />
                             </div>
                         </form>
@@ -234,7 +234,7 @@ export default function Navbar() {
                                     }}
                                     className="flex-1 h-10 text-sm text-white rounded-xl"
                                     style={{
-                                        background: "linear-gradient(135deg, #6B3FA0, #8B5FC0)",
+                                        background: "linear-gradient(135deg, var(--color-primary), var(--color-primary-medium))",
                                     }}
                                 >
                                     Sign up

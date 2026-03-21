@@ -6,12 +6,12 @@ import { Star } from "lucide-react";
 import { AnimeCardData } from "@/types/anime";
 
 const typeColors: Record<string, string> = {
-    TV: "#6B3FA0",
-    Movie: "#1565C0",
-    OVA: "#2E7D32",
-    Special: "#D4700A",
-    ONA: "#0097A7",
-    Music: "#E91E63",
+    TV: "var(--color-type-tv)",
+    Movie: "var(--color-type-movie)",
+    OVA: "var(--color-type-ova)",
+    Special: "var(--color-type-special)",
+    ONA: "var(--color-type-ona)",
+    Music: "var(--color-type-music)",
 };
 
 interface AnimeCardProps {
@@ -23,13 +23,13 @@ export default function AnimeCard({ anime }: AnimeCardProps) {
         <Link href={`/anime/${anime.mal_id}`} className="group block">
             <div
                 className="rounded-2xl overflow-hidden bg-white transition-all duration-300  "
-                style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
+                style={{ boxShadow: "var(--shadow-card)" }}
                 onMouseEnter={(e) =>
                 (e.currentTarget.style.boxShadow =
-                    "0 8px 24px rgba(107,63,160,0.15)")
+                    "var(--shadow-card-hover)")
                 }
                 onMouseLeave={(e) =>
-                    (e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.06)")
+                    (e.currentTarget.style.boxShadow = "var(--shadow-card)")
                 }
             >
                 {/* Poster */}
@@ -46,7 +46,7 @@ export default function AnimeCard({ anime }: AnimeCardProps) {
                         <div
                             className="absolute top-2 right-2 px-2 py-0.5 rounded-md text-white text-xs font-medium"
                             style={{
-                                backgroundColor: typeColors[anime.type] || "#6B3FA0",
+                                backgroundColor: typeColors[anime.type] || "var(--color-primary)",
                             }}
                         >
                             {anime.type}
@@ -58,9 +58,9 @@ export default function AnimeCard({ anime }: AnimeCardProps) {
                         <div
                             className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-md text-xs"
                             style={{
-                                backgroundColor: "rgba(0,0,0,0.55)",
+                                backgroundColor: "var(--color-overlay-badge)",
                                 backdropFilter: "blur(4px)",
-                                color: "#FBBF24",
+                                color: "var(--color-star)",
                             }}
                         >
                             <Star size={10} fill="currentColor" />

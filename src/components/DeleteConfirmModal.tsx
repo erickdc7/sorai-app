@@ -23,7 +23,7 @@ export default function DeleteConfirmModal({
         <div
             className="fixed inset-0 z-[100] flex items-center justify-center p-4"
             style={{
-                backgroundColor: "rgba(0,0,0,0.5)",
+                backgroundColor: "var(--color-overlay-light)",
                 backdropFilter: "blur(4px)",
             }}
             onClick={(e) => e.target === e.currentTarget && onClose()}
@@ -33,7 +33,7 @@ export default function DeleteConfirmModal({
                     <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
                         <path
                             d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
-                            stroke="#DC2626"
+                            stroke="var(--color-error)"
                             strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"

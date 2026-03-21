@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, Search as SearchIcon } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import AuthModal from "@/components/AuthModal";
 import AnimeCard from "@/components/AnimeCard";
 import AnimeCardSkeleton from "@/components/AnimeCardSkeleton";
@@ -99,9 +100,9 @@ function SearchContent() {
                     onClick={() => handlePageChange(p)}
                     className="w-9 h-9 rounded-xl text-sm transition-colors"
                     style={{
-                        backgroundColor: currentPage === p ? "#6B3FA0" : "transparent",
-                        color: currentPage === p ? "white" : "#6B7280",
-                        border: currentPage === p ? "none" : "1px solid #E5E7EB",
+                        backgroundColor: currentPage === p ? "var(--color-primary)" : "transparent",
+                        color: currentPage === p ? "white" : "var(--color-text-secondary)",
+                        border: currentPage === p ? "none" : "1px solid var(--color-border)",
                     }}
                 >
                     {p}
@@ -225,6 +226,7 @@ export default function SearchPage() {
             >
                 <SearchContent />
             </Suspense>
+            <Footer />
         </div>
     );
 }
