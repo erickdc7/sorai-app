@@ -11,6 +11,7 @@ import AnimeCard from "@/components/AnimeCard";
 import AnimeCardSkeleton from "@/components/AnimeCardSkeleton";
 import { getTopAnime, getSeasonNow, getSeasonUpcoming, getSeasonByYear, getAnimeByGenre, JikanError } from "@/lib/jikan";
 import { AnimeCardData } from "@/types/anime";
+import { useAuth } from "@/context/AuthContext";
 
 function mapToCardData(anime: any): AnimeCardData {
     return {
@@ -120,6 +121,9 @@ function BrowseContent() {
     const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const { profile } = useAuth();
+    const showSensitive = profile?.show_sensitive_content ?? false;
+    const sfw = !showSensitive;
 
     const fetchData = useCallback(
         async (page: number) => {
@@ -128,25 +132,25 @@ function BrowseContent() {
             try {
                 let result;
                 if (genreId) {
-                    result = await getAnimeByGenre(genreId, 12, page);
+                    result = await getAnimeByGenre(genreId, 12, page, sfw);
                 } else if (type === "season-archive" && seasonYear && seasonName) {
-                    result = await getSeasonByYear(seasonYear, seasonName, 12, page);
+                    result = await getSeasonByYear(seasonYear, seasonName, 12, page, sfw);
                 } else if (type === "season") {
-                    result = await getSeasonNow(12, page);
+                    result = await getSeasonNow(12, page, sfw);
                 } else if (type === "upcoming") {
-                    result = await getSeasonUpcoming(12, page);
+                    result = await getSeasonUpcoming(12, page, sfw);
                 } else if (type === "movies") {
-                    result = await getTopAnime("bypopularity", 12, page, "movie");
+                    result = await getTopAnime("bypopularity", 12, page, "movie", sfw);
                 } else if (type === "airing") {
-                    result = await getTopAnime("airing", 12, page);
+                    result = await getTopAnime("airing", 12, page, undefined, sfw);
                 } else if (type === "ona") {
-                    result = await getTopAnime("bypopularity", 12, page, "ona");
+                    result = await getTopAnime("bypopularity", 12, page, "ona", sfw);
                 } else if (type === "ova") {
-                    result = await getTopAnime("bypopularity", 12, page, "ova");
+                    result = await getTopAnime("bypopularity", 12, page, "ova", sfw);
                 } else if (type === "special") {
-                    result = await getTopAnime("bypopularity", 12, page, "special");
+                    result = await getTopAnime("bypopularity", 12, page, "special", sfw);
                 } else {
-                    result = await getTopAnime("bypopularity", 12, page);
+                    result = await getTopAnime("bypopularity", 12, page, undefined, sfw);
                 }
                 setResults(result.data.map(mapToCardData));
                 setTotalPages(result.pagination.last_visible_page);
@@ -160,7 +164,7 @@ function BrowseContent() {
             }
             setLoading(false);
         },
-        [type, genreId, seasonYear, seasonName]
+        [type, genreId, seasonYear, seasonName, sfw]
     );
 
     useEffect(() => {

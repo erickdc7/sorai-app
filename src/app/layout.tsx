@@ -44,7 +44,7 @@ export default function RootLayout({
                 <AuthProvider>
                     {children}
                     <Toaster
-                        position="top-right"
+                        position="bottom-right"
                         toastOptions={{
                             style: {
                                 borderRadius: "12px",

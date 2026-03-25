@@ -33,7 +33,8 @@ export async function getTopAnime(
     filter: string = "bypopularity",
     limit: number = 12,
     page: number = 1,
-    type?: string
+    type?: string,
+    sfw: boolean = true
 ) {
     const data = await jikanFetch<{
         data: any[];
@@ -42,11 +43,11 @@ export async function getTopAnime(
             has_next_page: boolean;
             current_page: number;
         };
-    }>(`/top/anime?filter=${filter}&limit=${limit}&page=${page}${type ? `&type=${type}` : ""}`);
+    }>(`/top/anime?filter=${filter}&limit=${limit}&page=${page}${type ? `&type=${type}` : ""}${sfw ? "&sfw" : ""}`);
     return data;
 }
 
-export async function getSeasonNow(limit: number = 12, page: number = 1) {
+export async function getSeasonNow(limit: number = 12, page: number = 1, sfw: boolean = true) {
     const data = await jikanFetch<{
         data: any[];
         pagination: {
@@ -54,11 +55,11 @@ export async function getSeasonNow(limit: number = 12, page: number = 1) {
             has_next_page: boolean;
             current_page: number;
         };
-    }>(`/seasons/now?limit=${limit}&page=${page}`);
+    }>(`/seasons/now?limit=${limit}&page=${page}${sfw ? "&sfw" : ""}`);
     return data;
 }
 
-export async function getSeasonUpcoming(limit: number = 12, page: number = 1) {
+export async function getSeasonUpcoming(limit: number = 12, page: number = 1, sfw: boolean = true) {
     const data = await jikanFetch<{
         data: any[];
         pagination: {
@@ -66,11 +67,11 @@ export async function getSeasonUpcoming(limit: number = 12, page: number = 1) {
             has_next_page: boolean;
             current_page: number;
         };
-    }>(`/seasons/upcoming?limit=${limit}&page=${page}`);
+    }>(`/seasons/upcoming?limit=${limit}&page=${page}${sfw ? "&sfw" : ""}`);
     return data;
 }
 
-export async function getAnimeByGenre(genreId: number, limit: number = 12, page: number = 1) {
+export async function getAnimeByGenre(genreId: number, limit: number = 12, page: number = 1, sfw: boolean = true) {
     const data = await jikanFetch<{
         data: any[];
         pagination: {
@@ -78,7 +79,7 @@ export async function getAnimeByGenre(genreId: number, limit: number = 12, page:
             has_next_page: boolean;
             current_page: number;
         };
-    }>(`/anime?genres=${genreId}&order_by=members&sort=desc&limit=${limit}&page=${page}`);
+    }>(`/anime?genres=${genreId}&order_by=members&sort=desc&limit=${limit}&page=${page}${sfw ? "&sfw" : ""}`);
     return data;
 }
 
@@ -86,7 +87,8 @@ export async function getSeasonByYear(
     year: number,
     season: string,
     limit: number = 12,
-    page: number = 1
+    page: number = 1,
+    sfw: boolean = true
 ) {
     const data = await jikanFetch<{
         data: any[];
@@ -95,14 +97,15 @@ export async function getSeasonByYear(
             has_next_page: boolean;
             current_page: number;
         };
-    }>(`/seasons/${year}/${season}?limit=${limit}&page=${page}`);
+    }>(`/seasons/${year}/${season}?limit=${limit}&page=${page}${sfw ? "&sfw" : ""}`);
     return data;
 }
 
 export async function searchAnime(
     query: string,
     page: number = 1,
-    limit: number = 16
+    limit: number = 16,
+    sfw: boolean = true
 ) {
     const data = await jikanFetch<{
         data: any[];
@@ -111,7 +114,7 @@ export async function searchAnime(
             has_next_page: boolean;
             current_page: number;
         };
-    }>(`/anime?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}`);
+    }>(`/anime?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}${sfw ? "&sfw" : ""}`);
     return data;
 }
 

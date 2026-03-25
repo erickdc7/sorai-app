@@ -45,7 +45,8 @@ function mapToHeroData(anime: any) {
 }
 
 export default function HomePage() {
-    const { user, setOpenModal } = useAuth();
+    const { user, setOpenModal, profile } = useAuth();
+    const showSensitive = profile?.show_sensitive_content ?? false;
     const [heroAnimes, setHeroAnimes] = useState<any[]>([]);
     const [popular, setPopular] = useState<AnimeCardData[]>([]);
     const [season, setSeason] = useState<AnimeCardData[]>([]);
@@ -57,7 +58,7 @@ export default function HomePage() {
         setError(null);
         try {
             // Fetch hero (top by score), popular, and seasonal — stagger to avoid 429
-            const topResult = await getTopAnime("bypopularity", 18);
+            const topResult = await getTopAnime("bypopularity", 18, 1, undefined, !showSensitive);
 
             // Use the top 5 for hero, rest for the popular section
             setHeroAnimes(topResult.data.slice(0, 5).map(mapToHeroData));
@@ -66,7 +67,7 @@ export default function HomePage() {
             // Small delay to respect Jikan rate limiting
             await new Promise((r) => setTimeout(r, 400));
 
-            const seasonResult = await getSeasonNow(12);
+            const seasonResult = await getSeasonNow(12, 1, !showSensitive);
             setSeason(seasonResult.data.map(mapToCardData));
         } catch (err) {
             if (err instanceof JikanError && err.status === 429) {

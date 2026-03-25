@@ -1,5 +1,5 @@
 -- ============================================
--- AniTrack: user_anime_list table + RLS
+-- Sorai App: user_anime_list table + RLS
 -- Run this in your Supabase SQL Editor
 -- ============================================
 

@@ -1,8 +1,9 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase";
+import { getUserProfile, ensureUserProfile, UserProfile } from "@/lib/user-profile";
 
 interface AuthContextType {
     user: User | null;
@@ -18,6 +19,8 @@ interface AuthContextType {
     ) => Promise<{ error: string | null; needsConfirmation?: boolean }>;
     signOut: () => Promise<void>;
     username: string;
+    profile: UserProfile | null;
+    refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,36 +31,106 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [session, setSession] = useState<Session | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [openModal, setOpenModal] = useState<"login" | "register" | null>(null);
+    const [profile, setProfile] = useState<UserProfile | null>(null);
+    const signingInRef = useRef(false);
+
+    const fetchProfile = useCallback(
+        async (userId: string) => {
+            try {
+                const p = await ensureUserProfile(supabase, userId);
+                setProfile(p);
+            } catch {
+                // Profile table might not exist yet, silently fail
+                setProfile(null);
+            }
+        },
+        [supabase]
+    );
+
+    const refreshProfile = useCallback(async () => {
+        if (user) {
+            await fetchProfile(user.id);
+        }
+    }, [user, fetchProfile]);
 
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
             setUser(session?.user ?? null);
+            if (session?.user) {
+                fetchProfile(session.user.id);
+            }
             setIsLoading(false);
         });
 
         const {
             data: { subscription },
         } = supabase.auth.onAuthStateChange((_event, session) => {
+            // Skip state updates while signIn is checking deactivation
+            if (signingInRef.current) return;
+
             setSession(session);
             setUser(session?.user ?? null);
+            if (session?.user) {
+                fetchProfile(session.user.id);
+            } else {
+                setProfile(null);
+            }
             setIsLoading(false);
         });
 
         return () => subscription.unsubscribe();
-    }, [supabase]);
+    }, [supabase, fetchProfile]);
 
     const signIn = useCallback(
         async (email: string, password: string) => {
-            const { error } = await supabase.auth.signInWithPassword({
-                email,
-                password,
-            });
-            if (error) return { error: error.message };
-            setOpenModal(null);
-            return { error: null };
+            signingInRef.current = true;
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password,
+                });
+                if (error) {
+                    signingInRef.current = false;
+                    return { error: error.message };
+                }
+
+                // Check if account is deactivated
+                if (data.user) {
+                    try {
+                        const { data: profileData } = await supabase
+                            .from("user_profiles")
+                            .select("deactivated_at")
+                            .eq("id", data.user.id)
+                            .maybeSingle();
+
+                        if (profileData?.deactivated_at) {
+                            await supabase.auth.signOut();
+                            signingInRef.current = false;
+                            return {
+                                error: "Your account has been deactivated. Please contact support to reactivate it.",
+                            };
+                        }
+                    } catch {
+                        // Profile check failed, allow login
+                    }
+                }
+
+                // Allow the auth state to propagate now
+                signingInRef.current = false;
+                setSession(data.session);
+                setUser(data.user);
+                if (data.user) {
+                    fetchProfile(data.user.id);
+                }
+                setOpenModal(null);
+                return { error: null };
+            } catch {
+                signingInRef.current = false;
+                return { error: "An unexpected error occurred" };
+            }
         },
-        [supabase]
+        [supabase, fetchProfile]
     );
 
     const signUp = useCallback(
@@ -84,6 +157,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const signOutFn = useCallback(async () => {
         await supabase.auth.signOut();
+        setProfile(null);
     }, [supabase]);
 
     const username =
@@ -103,6 +177,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 signUp,
                 signOut: signOutFn,
                 username,
+                profile,
+                refreshProfile,
             }}
         >
             {children}

@@ -72,9 +72,9 @@ export default function AuthModal() {
             if (isLogin) {
                 const { error: authError } = await signIn(email, password);
                 if (authError) {
-                    setError("Incorrect email or password.");
+                    setError(authError);
                     toast.error("Login failed", {
-                        description: "Please check your email and password.",
+                        description: authError,
                     });
                 } else {
                     toast.success("Welcome back!", {

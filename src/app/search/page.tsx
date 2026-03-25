@@ -10,6 +10,7 @@ import AnimeCard from "@/components/AnimeCard";
 import AnimeCardSkeleton from "@/components/AnimeCardSkeleton";
 import { searchAnime, JikanError } from "@/lib/jikan";
 import { AnimeCardData } from "@/types/anime";
+import { useAuth } from "@/context/AuthContext";
 
 function mapToCardData(anime: any): AnimeCardData {
     return {
@@ -25,7 +26,9 @@ function mapToCardData(anime: any): AnimeCardData {
 function SearchContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
+    const { profile } = useAuth();
     const query = searchParams.get("q") || "";
+    const showSensitive = profile?.show_sensitive_content ?? false;
     const [results, setResults] = useState<AnimeCardData[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -44,7 +47,7 @@ function SearchContent() {
             setLoading(true);
             setError(null);
             try {
-                const data = await searchAnime(query, page, 16);
+                const data = await searchAnime(query, page, 16, !showSensitive);
                 setResults(data.data.map(mapToCardData));
                 setTotalPages(data.pagination.last_visible_page);
                 setCurrentPage(data.pagination.current_page);
@@ -57,7 +60,7 @@ function SearchContent() {
             }
             setLoading(false);
         },
-        [query]
+        [query, showSensitive]
     );
 
     useEffect(() => {

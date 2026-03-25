@@ -3,12 +3,12 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { Search, List, LogOut, ChevronDown, Menu, X } from "lucide-react";
+import { Search, List, LogOut, ChevronDown, Menu, X, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 
 export default function Navbar() {
-    const { user, isLoading, signOut, setOpenModal, username } = useAuth();
+    const { user, isLoading, signOut, setOpenModal, username, profile } = useAuth();
     const [searchQuery, setSearchQuery] = useState("");
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -122,9 +122,17 @@ export default function Navbar() {
                                     onClick={() => setShowUserMenu(!showUserMenu)}
                                     className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl hover:bg-surface-alt transition-colors"
                                 >
-                                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-medium ring-2 ring-purple-200">
-                                        {username.charAt(0).toUpperCase()}
-                                    </div>
+                                    {profile?.avatar_url ? (
+                                        <img
+                                            src={profile.avatar_url}
+                                            alt="Avatar"
+                                            className="w-8 h-8 rounded-full object-cover ring-2 ring-purple-200"
+                                        />
+                                    ) : (
+                                        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-medium ring-2 ring-purple-200">
+                                            {username.charAt(0).toUpperCase()}
+                                        </div>
+                                    )}
                                     <span className="text-sm text-text-primary">{username}</span>
                                     <ChevronDown
                                         size={14}
@@ -151,6 +159,14 @@ export default function Navbar() {
                                             >
                                                 <List size={16} className="text-text-secondary" />
                                                 My List
+                                            </Link>
+                                            <Link
+                                                href="/settings"
+                                                onClick={() => setShowUserMenu(false)}
+                                                className="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 hover:bg-surface-hover transition-colors"
+                                            >
+                                                <Settings size={16} className="text-text-secondary" />
+                                                Settings
                                             </Link>
                                             <div className="border-t border-surface-alt">
                                                 <button
@@ -241,17 +257,27 @@ export default function Navbar() {
                                 </button>
                             </div>
                         ) : (
-                            <button
-                                onClick={() => {
-                                    signOut();
-                                    toast.success("Signed out");
-                                    router.push("/");
-                                    setShowMobileMenu(false);
-                                }}
-                                className="w-full h-10 text-sm text-error border border-red-200 rounded-xl"
-                            >
-                                Sign out
-                            </button>
+                            <>
+                                <Link
+                                    href="/settings"
+                                    onClick={() => setShowMobileMenu(false)}
+                                    className="w-full h-10 text-sm border border-border text-gray-700 rounded-xl flex items-center justify-center gap-2"
+                                >
+                                    <Settings size={16} />
+                                    Settings
+                                </Link>
+                                <button
+                                    onClick={() => {
+                                        signOut();
+                                        toast.success("Signed out");
+                                        router.push("/");
+                                        setShowMobileMenu(false);
+                                    }}
+                                    className="w-full h-10 text-sm text-error border border-red-200 rounded-xl"
+                                >
+                                    Sign out
+                                </button>
+                            </>
                         )}
                     </div>
                 )}
