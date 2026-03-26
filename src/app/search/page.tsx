@@ -36,6 +36,16 @@ function SearchContent() {
     const [error, setError] = useState<string | null>(null);
     const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
+    const DISPLAY_LIMIT = 12;
+    const FETCH_LIMIT = 16;
+
+    const getResultsLabel = () => {
+        const estimated = totalPages * DISPLAY_LIMIT;
+        if (estimated <= 50) return `${estimated} results`;
+        const rounded = Math.floor(estimated / 50) * 50;
+        return `More than ${rounded} results`;
+    };
+
     const fetchResults = useCallback(
         async (page: number) => {
             if (!query) {
@@ -47,8 +57,12 @@ function SearchContent() {
             setLoading(true);
             setError(null);
             try {
-                const data = await searchAnime(query, page, 16, !showSensitive);
-                setResults(data.data.map(mapToCardData));
+                const data = await searchAnime(query, page, FETCH_LIMIT, !showSensitive);
+                const mapped = data.data.map(mapToCardData);
+                const unique = mapped.filter(
+                    (anime, index, self) => self.findIndex((a) => a.mal_id === anime.mal_id) === index
+                );
+                setResults(unique.slice(0, DISPLAY_LIMIT));
                 setTotalPages(data.pagination.last_visible_page);
                 setCurrentPage(data.pagination.current_page);
             } catch (err) {
@@ -127,7 +141,7 @@ function SearchContent() {
                             </h1>
                         </div>
                         <p className="text-gray-400 text-sm ml-7">
-                            {!loading && `${results.length} result${results.length !== 1 ? "s" : ""} found`}
+                            {!loading && getResultsLabel()}
                         </p>
                     </>
                 ) : (
@@ -158,7 +172,7 @@ function SearchContent() {
             {/* Results */}
             {loading ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-10">
-                    {Array.from({ length: 16 }).map((_, i) => (
+                    {Array.from({ length: 12 }).map((_, i) => (
                         <AnimeCardSkeleton key={i} />
                     ))}
                 </div>
