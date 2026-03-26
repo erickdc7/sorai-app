@@ -1,4 +1,5 @@
 const JIKAN_BASE = "https://api.jikan.moe/v4";
+const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
 class JikanError extends Error {
     status: number;
@@ -9,7 +10,39 @@ class JikanError extends Error {
     }
 }
 
+function getCached<T>(key: string): T | null {
+    try {
+        const raw = sessionStorage.getItem(key);
+        if (!raw) return null;
+        const { data, ts } = JSON.parse(raw);
+        if (Date.now() - ts > CACHE_TTL_MS) {
+            sessionStorage.removeItem(key);
+            return null;
+        }
+        return data as T;
+    } catch {
+        return null;
+    }
+}
+
+function setCache(key: string, data: unknown) {
+    try {
+        sessionStorage.setItem(key, JSON.stringify({ data, ts: Date.now() }));
+    } catch {
+        // Storage full — clear old entries
+        sessionStorage.clear();
+    }
+}
+
 async function jikanFetch<T>(endpoint: string): Promise<T> {
+    const cacheKey = `jikan:${endpoint}`;
+
+    // Return cached data if available
+    if (typeof window !== "undefined") {
+        const cached = getCached<T>(cacheKey);
+        if (cached) return cached;
+    }
+
     const res = await fetch(`${JIKAN_BASE}${endpoint}`);
 
     if (res.status === 429) {
@@ -26,7 +59,14 @@ async function jikanFetch<T>(endpoint: string): Promise<T> {
         );
     }
 
-    return res.json();
+    const data: T = await res.json();
+
+    // Cache successful responses
+    if (typeof window !== "undefined") {
+        setCache(cacheKey, data);
+    }
+
+    return data;
 }
 
 export async function getTopAnime(

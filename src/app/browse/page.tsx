@@ -125,6 +125,9 @@ function BrowseContent() {
     const showSensitive = profile?.show_sensitive_content ?? false;
     const sfw = !showSensitive;
 
+    const DISPLAY_LIMIT = 12;
+    const FETCH_LIMIT = 16; // overfetch to compensate for API duplicates
+
     const fetchData = useCallback(
         async (page: number) => {
             setLoading(true);
@@ -132,27 +135,31 @@ function BrowseContent() {
             try {
                 let result;
                 if (genreId) {
-                    result = await getAnimeByGenre(genreId, 12, page, sfw);
+                    result = await getAnimeByGenre(genreId, FETCH_LIMIT, page, sfw);
                 } else if (type === "season-archive" && seasonYear && seasonName) {
-                    result = await getSeasonByYear(seasonYear, seasonName, 12, page, sfw);
+                    result = await getSeasonByYear(seasonYear, seasonName, FETCH_LIMIT, page, sfw);
                 } else if (type === "season") {
-                    result = await getSeasonNow(12, page, sfw);
+                    result = await getSeasonNow(FETCH_LIMIT, page, sfw);
                 } else if (type === "upcoming") {
-                    result = await getSeasonUpcoming(12, page, sfw);
+                    result = await getSeasonUpcoming(FETCH_LIMIT, page, sfw);
                 } else if (type === "movies") {
-                    result = await getTopAnime("bypopularity", 12, page, "movie", sfw);
+                    result = await getTopAnime("bypopularity", FETCH_LIMIT, page, "movie", sfw);
                 } else if (type === "airing") {
-                    result = await getTopAnime("airing", 12, page, undefined, sfw);
+                    result = await getTopAnime("airing", FETCH_LIMIT, page, undefined, sfw);
                 } else if (type === "ona") {
-                    result = await getTopAnime("bypopularity", 12, page, "ona", sfw);
+                    result = await getTopAnime("bypopularity", FETCH_LIMIT, page, "ona", sfw);
                 } else if (type === "ova") {
-                    result = await getTopAnime("bypopularity", 12, page, "ova", sfw);
+                    result = await getTopAnime("bypopularity", FETCH_LIMIT, page, "ova", sfw);
                 } else if (type === "special") {
-                    result = await getTopAnime("bypopularity", 12, page, "special", sfw);
+                    result = await getTopAnime("bypopularity", FETCH_LIMIT, page, "special", sfw);
                 } else {
-                    result = await getTopAnime("bypopularity", 12, page, undefined, sfw);
+                    result = await getTopAnime("bypopularity", FETCH_LIMIT, page, undefined, sfw);
                 }
-                setResults(result.data.map(mapToCardData));
+                const mapped = result.data.map(mapToCardData);
+                const unique = mapped.filter(
+                    (anime, index, self) => self.findIndex((a) => a.mal_id === anime.mal_id) === index
+                );
+                setResults(unique.slice(0, DISPLAY_LIMIT));
                 setTotalPages(result.pagination.last_visible_page);
                 setCurrentPage(result.pagination.current_page);
             } catch (err) {
@@ -168,6 +175,7 @@ function BrowseContent() {
     );
 
     useEffect(() => {
+        setResults([]);
         setCurrentPage(1);
         fetchData(1);
     }, [type, fetchData]);
@@ -224,7 +232,7 @@ function BrowseContent() {
         <main className="max-w-container mx-auto px-6 md:px-10 py-10">
             {/* Header */}
             <div className="mb-8">
-                <div className="flex items-center gap-3 mb-2">
+                <div className="flex items-center gap-3 mb-4">
                     <Link
                         href="/"
                         className="text-gray-400 hover:text-primary text-sm transition-colors"
@@ -328,9 +336,15 @@ export default function BrowsePage() {
                     </main>
                 }
             >
-                <BrowseContent />
+                <BrowseContentWrapper />
             </Suspense>
             <Footer />
         </div>
     );
+}
+
+function BrowseContentWrapper() {
+    const searchParams = useSearchParams();
+    const key = searchParams.toString();
+    return <BrowseContent key={key} />;
 }

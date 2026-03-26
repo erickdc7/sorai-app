@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Search, List, LogOut, ChevronDown, Menu, X, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
@@ -15,6 +15,8 @@ export default function Navbar() {
     const [scrolled, setScrolled] = useState(false);
     const router = useRouter();
     const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const browseType = searchParams.get("type");
 
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 10);
@@ -57,25 +59,41 @@ export default function Navbar() {
 
                         <div className="hidden md:flex items-center gap-1">
                             <Link
-                                href="/"
-                                className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${isActive("/")
+                                href="/browse?type=popular"
+                                className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${pathname === "/browse" && browseType === "popular"
                                     ? "text-primary bg-primary-light font-medium"
                                     : "text-text-secondary hover:text-primary"
                                     }`}
                             >
-                                Home
+                                Popular
                             </Link>
-                            {isLoggedIn && (
-                                <Link
-                                    href="/my-list"
-                                    className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${isActive("/my-list")
-                                        ? "text-primary bg-primary-light font-medium"
-                                        : "text-text-secondary hover:text-primary"
-                                        }`}
-                                >
-                                    My List
-                                </Link>
-                            )}
+                            <Link
+                                href="/browse?type=season"
+                                className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${pathname === "/browse" && browseType === "season"
+                                    ? "text-primary bg-primary-light font-medium"
+                                    : "text-text-secondary hover:text-primary"
+                                    }`}
+                            >
+                                Seasonal
+                            </Link>
+                            <Link
+                                href="/browse?type=upcoming"
+                                className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${pathname === "/browse" && browseType === "upcoming"
+                                    ? "text-primary bg-primary-light font-medium"
+                                    : "text-text-secondary hover:text-primary"
+                                    }`}
+                            >
+                                Upcoming
+                            </Link>
+                            <Link
+                                href="/browse?type=airing"
+                                className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${pathname === "/browse" && browseType === "airing"
+                                    ? "text-primary bg-primary-light font-medium"
+                                    : "text-text-secondary hover:text-primary"
+                                    }`}
+                            >
+                                Top Airing
+                            </Link>
                         </div>
                     </div>
 
@@ -217,21 +235,33 @@ export default function Navbar() {
                             </div>
                         </form>
                         <Link
-                            href="/"
+                            href="/browse?type=popular"
                             onClick={() => setShowMobileMenu(false)}
                             className="block py-2 text-sm text-gray-700"
                         >
-                            Home
+                            Popular
                         </Link>
-                        {isLoggedIn && (
-                            <Link
-                                href="/my-list"
-                                onClick={() => setShowMobileMenu(false)}
-                                className="block py-2 text-sm text-gray-700"
-                            >
-                                My List
-                            </Link>
-                        )}
+                        <Link
+                            href="/browse?type=season"
+                            onClick={() => setShowMobileMenu(false)}
+                            className="block py-2 text-sm text-gray-700"
+                        >
+                            Seasonal
+                        </Link>
+                        <Link
+                            href="/browse?type=upcoming"
+                            onClick={() => setShowMobileMenu(false)}
+                            className="block py-2 text-sm text-gray-700"
+                        >
+                            Upcoming
+                        </Link>
+                        <Link
+                            href="/browse?type=airing"
+                            onClick={() => setShowMobileMenu(false)}
+                            className="block py-2 text-sm text-gray-700"
+                        >
+                            Top Airing
+                        </Link>
                         {!isLoggedIn ? (
                             <div className="flex gap-2 pt-2">
                                 <button
@@ -258,6 +288,14 @@ export default function Navbar() {
                             </div>
                         ) : (
                             <>
+                                <Link
+                                    href="/my-list"
+                                    onClick={() => setShowMobileMenu(false)}
+                                    className="w-full h-10 text-sm border border-border text-gray-700 rounded-xl flex items-center justify-center gap-2"
+                                >
+                                    <List size={16} />
+                                    My List
+                                </Link>
                                 <Link
                                     href="/settings"
                                     onClick={() => setShowMobileMenu(false)}

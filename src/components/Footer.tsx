@@ -17,8 +17,6 @@ const genreLinks = [
     { label: "Fantasy", href: "/browse?genre=10" },
 ];
 
-
-
 const seasonLinks = [
     { label: "Winter", href: "/browse?type=season-archive&year=2026&season=winter" },
     { label: "Spring", href: "/browse?type=season-archive&year=2026&season=spring" },
