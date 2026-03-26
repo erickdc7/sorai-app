@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Search, List, LogOut, ChevronDown, Menu, X, Settings } from "lucide-react";
@@ -8,6 +8,14 @@ import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 
 export default function Navbar() {
+    return (
+        <Suspense fallback={null}>
+            <NavbarContent />
+        </Suspense>
+    );
+}
+
+function NavbarContent() {
     const { user, isLoading, signOut, setOpenModal, username, profile } = useAuth();
     const [searchQuery, setSearchQuery] = useState("");
     const [showUserMenu, setShowUserMenu] = useState(false);

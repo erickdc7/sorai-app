@@ -8,6 +8,7 @@ const nunitoSans = Nunito_Sans({
     subsets: ["latin"],
     display: "swap",
     variable: "--font-nunito-sans",
+    adjustFontFallback: false,
 });
 
 const bebasNeue = Bebas_Neue({
