@@ -103,6 +103,8 @@ export default function AnimeDetailPage({
     const [relatedAnime, setRelatedAnime] = useState<CarouselAnimeItem[]>([]);
     const [similarAnime, setSimilarAnime] = useState<CarouselAnimeItem[]>([]);
     const [loading, setLoading] = useState(true);
+    const [loadingRelated, setLoadingRelated] = useState(true);
+    const [loadingSimilar, setLoadingSimilar] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const [userListItem, setUserListItem] = useState<UserAnimeListItem | null>(null);
@@ -133,7 +135,6 @@ export default function AnimeDetailPage({
             setTimeout(async () => {
                 try {
                     const relData = await getAnimeRelations(animeId);
-                    // Flatten relation entries into carousel items
                     const relationLabels: Record<string, string> = {
                         Sequel: "Sequel",
                         Prequel: "Prequel",
@@ -165,33 +166,28 @@ export default function AnimeDetailPage({
                         }
                     }
 
-                    // Fetch images SEQUENTIALLY to avoid 429 rate limiting
+                    // Fetch details using cached getAnimeById
                     const withImages: CarouselAnimeItem[] = [];
                     for (const item of relItems.slice(0, 10)) {
                         try {
-                            await new Promise((r) => setTimeout(r, 350));
-                            const res = await fetch(
-                                `https://api.jikan.moe/v4/anime/${item.mal_id}`
-                            );
-                            if (res.ok) {
-                                const d = await res.json();
-                                withImages.push({
-                                    ...item,
-                                    image_url:
-                                        d.data?.images?.webp?.large_image_url ||
-                                        d.data?.images?.jpg?.large_image_url ||
-                                        d.data?.images?.jpg?.image_url ||
-                                        "",
-                                    type: d.data?.type || null,
-                                    year: d.data?.year || d.data?.aired?.prop?.from?.year || null,
-                                    score: d.data?.score || null,
-                                });
-                            }
+                            await new Promise((r) => setTimeout(r, 200));
+                            const d = await getAnimeById(item.mal_id);
+                            withImages.push({
+                                ...item,
+                                image_url:
+                                    d.images?.webp?.large_image_url ||
+                                    d.images?.jpg?.large_image_url ||
+                                    d.images?.jpg?.image_url ||
+                                    "",
+                                type: d.type || null,
+                                year: d.year || d.aired?.prop?.from?.year || null,
+                                score: d.score || null,
+                            });
                         } catch { }
-                        // Update state progressively so items appear as they load
                         setRelatedAnime([...withImages]);
                     }
                 } catch { }
+                setLoadingRelated(false);
 
                 // Delay before recommendations
                 setTimeout(async () => {
@@ -213,31 +209,25 @@ export default function AnimeDetailPage({
                             }))
                             .filter((i: any) => i.mal_id && i.image_url);
 
-                        // Fetch details sequentially for type/score/year
+                        // Fetch details using cached getAnimeById
                         const enriched: CarouselAnimeItem[] = [];
                         for (const item of baseItems) {
                             try {
-                                await new Promise((r) => setTimeout(r, 400));
-                                const res = await fetch(
-                                    `https://api.jikan.moe/v4/anime/${item.mal_id}`
-                                );
-                                if (res.ok) {
-                                    const d = await res.json();
-                                    enriched.push({
-                                        ...item,
-                                        type: d.data?.type || null,
-                                        year: d.data?.year || d.data?.aired?.prop?.from?.year || null,
-                                        score: d.data?.score || null,
-                                    });
-                                } else {
-                                    enriched.push(item);
-                                }
+                                await new Promise((r) => setTimeout(r, 200));
+                                const d = await getAnimeById(item.mal_id);
+                                enriched.push({
+                                    ...item,
+                                    type: d.type || null,
+                                    year: d.year || d.aired?.prop?.from?.year || null,
+                                    score: d.score || null,
+                                });
                             } catch {
                                 enriched.push(item);
                             }
                             setSimilarAnime([...enriched]);
                         }
                     } catch { }
+                    setLoadingSimilar(false);
                 }, 600);
             }, 600);
         } catch (err) {
@@ -978,7 +968,28 @@ export default function AnimeDetailPage({
                         )}
 
                         {/* Related Anime */}
-                        {relatedAnime.length > 0 && (
+                        {loadingRelated ? (
+                            <section>
+                                <div className="flex items-center gap-2 mb-4">
+                                    <span className="w-1 h-5 rounded-full inline-block bg-primary" />
+                                    <Tv size={16} className="text-text-secondary" />
+                                    <h2 className="text-text-primary text-[1.5rem] font-semibold">Related Anime</h2>
+                                </div>
+                                <div className="flex gap-4 overflow-hidden">
+                                    {Array.from({ length: 5 }).map((_, i) => (
+                                        <div key={i} className="shrink-0 animate-pulse" style={{ width: "160px" }}>
+                                            <div className="rounded-2xl overflow-hidden bg-white" style={{ boxShadow: "var(--shadow-card)" }}>
+                                                <div className="aspect-[2/3] bg-gray-200" />
+                                                <div className="p-3 space-y-2">
+                                                    <div className="h-4 bg-gray-200 rounded w-3/4" />
+                                                    <div className="h-3 bg-gray-100 rounded w-1/2" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+                        ) : relatedAnime.length > 0 && (
                             <AnimeHorizontalCarousel
                                 title="Related Anime"
                                 icon={<Tv size={16} className="text-text-secondary" />}
@@ -987,7 +998,28 @@ export default function AnimeDetailPage({
                         )}
 
                         {/* Similar Anime (Recommendations) */}
-                        {similarAnime.length > 0 && (
+                        {loadingSimilar ? (
+                            <section>
+                                <div className="flex items-center gap-2 mb-4">
+                                    <span className="w-1 h-5 rounded-full inline-block bg-primary" />
+                                    <Star size={16} className="text-text-secondary" />
+                                    <h2 className="text-text-primary text-[1.5rem] font-semibold">Similar Anime</h2>
+                                </div>
+                                <div className="flex gap-4 overflow-hidden">
+                                    {Array.from({ length: 5 }).map((_, i) => (
+                                        <div key={i} className="shrink-0 animate-pulse" style={{ width: "160px" }}>
+                                            <div className="rounded-2xl overflow-hidden bg-white" style={{ boxShadow: "var(--shadow-card)" }}>
+                                                <div className="aspect-[2/3] bg-gray-200" />
+                                                <div className="p-3 space-y-2">
+                                                    <div className="h-4 bg-gray-200 rounded w-3/4" />
+                                                    <div className="h-3 bg-gray-100 rounded w-1/2" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+                        ) : similarAnime.length > 0 && (
                             <AnimeHorizontalCarousel
                                 title="Similar Anime"
                                 icon={<Star size={16} className="text-text-secondary" />}
