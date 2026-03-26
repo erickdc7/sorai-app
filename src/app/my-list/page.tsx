@@ -495,7 +495,7 @@ function ListCard({
             <div className="flex-1 min-w-0">
                 <Link href={`/anime/${item.mal_id}`}>
                     <h4
-                        className="text-text-primary font-medium text-sm truncate hover:text-primary transition-colors"
+                        className="text-text-primary font-medium text-[1.15rem] truncate hover:text-primary transition-colors"
                         style={{ fontFamily: "var(--font-bebas-neue), sans-serif", letterSpacing: "0.01em" }}
                     >
                         {item.anime_title}
