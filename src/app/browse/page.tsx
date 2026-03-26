@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { TrendingUp, Sparkles, ChevronLeft, ChevronRight, Clock, Film, Tag, Radio, PlayCircle, Tv, Star, CalendarDays } from "lucide-react";
+import { TrendingUp, Sparkles, ChevronLeft, ChevronRight, Clock, Film, Tag, Radio, Tv, Star, CalendarDays, Snowflake, Flower2, Sun, Leaf } from "lucide-react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -51,37 +51,37 @@ const PAGE_CONFIG: Record<string, { title: string; subtitle: string; icon: React
         title: "Upcoming Anime",
         subtitle: "Anime coming soon in the next season",
         icon: <Clock size={18} className="text-blue-500" />,
-        iconBg: "",
+        iconBg: "bg-blue-50",
     },
     movies: {
         title: "Top Movies",
         subtitle: "Highest rated anime movies",
         icon: <Film size={18} className="text-amber-500" />,
-        iconBg: "",
+        iconBg: "bg-amber-50",
     },
     airing: {
         title: "Top Airing",
         subtitle: "Highest rated anime currently on air",
         icon: <Radio size={18} className="text-green-500" />,
-        iconBg: "",
+        iconBg: "bg-green-50",
     },
     ona: {
         title: "ONAs",
         subtitle: "Original Net Animations — web-exclusive anime",
-        icon: <PlayCircle size={18} className="text-cyan-500" />,
-        iconBg: "",
+        icon: <Tv size={18} className="text-indigo-500" />,
+        iconBg: "bg-indigo-50",
     },
     ova: {
         title: "OVAs",
         subtitle: "Original Video Animations — special home-release anime",
         icon: <Tv size={18} className="text-indigo-500" />,
-        iconBg: "",
+        iconBg: "bg-indigo-50",
     },
     special: {
         title: "Specials",
         subtitle: "Special anime episodes and one-offs",
         icon: <Star size={18} className="text-yellow-500" />,
-        iconBg: "",
+        iconBg: "bg-yellow-50",
     },
 };
 
@@ -93,11 +93,25 @@ function BrowseContent() {
     const seasonYear = searchParams.get("year") ? parseInt(searchParams.get("year")!) : null;
     const seasonName = searchParams.get("season") || null;
 
+    const SEASON_ICONS: Record<string, React.ReactNode> = {
+        winter: <Snowflake size={18} className="text-sky-500" />,
+        spring: <Flower2 size={18} className="text-pink-500" />,
+        summer: <Sun size={18} className="text-amber-500" />,
+        fall: <Leaf size={18} className="text-orange-500" />,
+    };
+
+    const SEASON_ICON_BG: Record<string, string> = {
+        winter: "bg-sky-50",
+        spring: "bg-pink-50",
+        summer: "bg-amber-50",
+        fall: "bg-orange-50",
+    };
+
     const seasonArchiveConfig = (type === "season-archive" && seasonYear && seasonName) ? {
         title: `${SEASON_LABELS[seasonName] || seasonName} ${seasonYear}`,
         subtitle: `Anime from the ${SEASON_LABELS[seasonName] || seasonName} ${seasonYear} season`,
-        icon: <CalendarDays size={18} className="text-primary" />,
-        iconBg: "bg-primary-light",
+        icon: SEASON_ICONS[seasonName] || <CalendarDays size={18} className="text-primary" />,
+        iconBg: SEASON_ICON_BG[seasonName] || "bg-primary-light",
     } : null;
 
     const GENRE_NAMES: Record<number, string> = {
