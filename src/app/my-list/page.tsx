@@ -495,8 +495,14 @@ function ListCard({
             <div className="flex-1 min-w-0">
                 <Link href={`/anime/${item.mal_id}`}>
                     <h4
-                        className="text-text-primary font-medium text-[1.15rem] truncate hover:text-primary transition-colors"
+                        className="text-text-primary font-medium text-[1.15rem] truncate transition-colors"
                         style={{ fontFamily: "var(--font-bebas-neue), sans-serif", letterSpacing: "0.01em" }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.color = statusColors[item.status];
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.color = "";
+                        }}
                     >
                         {item.anime_title}
                     </h4>
