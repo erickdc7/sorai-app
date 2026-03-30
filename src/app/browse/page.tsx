@@ -124,8 +124,8 @@ function BrowseContent() {
     const genreConfig = genreId ? {
         title: GENRE_NAMES[genreId] || "Genre",
         subtitle: `Popular ${GENRE_NAMES[genreId] || ""} anime`,
-        icon: <Tag size={18} className="text-primary" />,
-        iconBg: "bg-primary-light",
+        icon: <Tag size={18} style={{ color: "var(--color-primary)" }} />,
+        iconBg: "var(--color-primary-light)",
     } : null;
 
     const config = seasonArchiveConfig || genreConfig || PAGE_CONFIG[type] || PAGE_CONFIG.popular;
