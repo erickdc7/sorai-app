@@ -38,50 +38,50 @@ const PAGE_CONFIG: Record<string, { title: string; subtitle: string; icon: React
     popular: {
         title: "Most Popular",
         subtitle: "Most popular anime of all time",
-        icon: <TrendingUp size={18} className="text-primary" />,
-        iconBg: "bg-primary-light",
+        icon: <TrendingUp size={18} style={{ color: "var(--color-primary)" }} />,
+        iconBg: "var(--color-primary-light)",
     },
     season: {
         title: "In Season",
         subtitle: "Anime currently airing this season",
         icon: <Sparkles size={18} style={{ color: "var(--color-type-special)" }} />,
-        iconBg: "",
+        iconBg: "var(--color-season-icon-bg)",
     },
     upcoming: {
         title: "Upcoming Anime",
         subtitle: "Anime coming soon in the next season",
-        icon: <Clock size={18} className="text-blue-500" />,
-        iconBg: "bg-blue-50",
+        icon: <Clock size={18} style={{ color: "var(--color-cat-upcoming)" }} />,
+        iconBg: "var(--color-cat-upcoming-bg)",
     },
     movies: {
         title: "Top Movies",
         subtitle: "Highest rated anime movies",
-        icon: <Film size={18} className="text-amber-500" />,
-        iconBg: "bg-amber-50",
+        icon: <Film size={18} style={{ color: "var(--color-cat-movies)" }} />,
+        iconBg: "var(--color-cat-movies-bg)",
     },
     airing: {
         title: "Top Airing",
         subtitle: "Highest rated anime currently on air",
-        icon: <Radio size={18} className="text-green-500" />,
-        iconBg: "bg-green-50",
+        icon: <Radio size={18} style={{ color: "var(--color-cat-airing)" }} />,
+        iconBg: "var(--color-cat-airing-bg)",
     },
     ona: {
         title: "ONAs",
         subtitle: "Original Net Animations — web-exclusive anime",
-        icon: <Tv size={18} className="text-indigo-500" />,
-        iconBg: "bg-indigo-50",
+        icon: <Tv size={18} style={{ color: "var(--color-cat-ovaona)" }} />,
+        iconBg: "var(--color-cat-ovaona-bg)",
     },
     ova: {
         title: "OVAs",
         subtitle: "Original Video Animations — special home-release anime",
-        icon: <Tv size={18} className="text-indigo-500" />,
-        iconBg: "bg-indigo-50",
+        icon: <Tv size={18} style={{ color: "var(--color-cat-ovaona)" }} />,
+        iconBg: "var(--color-cat-ovaona-bg)",
     },
     special: {
         title: "Specials",
         subtitle: "Special anime episodes and one-offs",
-        icon: <Star size={18} className="text-yellow-500" />,
-        iconBg: "bg-yellow-50",
+        icon: <Star size={18} style={{ color: "var(--color-cat-special)" }} />,
+        iconBg: "var(--color-cat-special-bg)",
     },
 };
 
@@ -94,24 +94,24 @@ function BrowseContent() {
     const seasonName = searchParams.get("season") || null;
 
     const SEASON_ICONS: Record<string, React.ReactNode> = {
-        winter: <Snowflake size={18} className="text-sky-500" />,
-        spring: <Flower2 size={18} className="text-pink-500" />,
-        summer: <Sun size={18} className="text-amber-500" />,
-        fall: <Leaf size={18} className="text-orange-500" />,
+        winter: <Snowflake size={18} style={{ color: "var(--color-season-winter)" }} />,
+        spring: <Flower2 size={18} style={{ color: "var(--color-season-spring)" }} />,
+        summer: <Sun size={18} style={{ color: "var(--color-season-summer)" }} />,
+        fall: <Leaf size={18} style={{ color: "var(--color-season-fall)" }} />,
     };
 
     const SEASON_ICON_BG: Record<string, string> = {
-        winter: "bg-sky-50",
-        spring: "bg-pink-50",
-        summer: "bg-amber-50",
-        fall: "bg-orange-50",
+        winter: "var(--color-season-winter-bg)",
+        spring: "var(--color-season-spring-bg)",
+        summer: "var(--color-season-summer-bg)",
+        fall: "var(--color-season-fall-bg)",
     };
 
     const seasonArchiveConfig = (type === "season-archive" && seasonYear && seasonName) ? {
         title: `${SEASON_LABELS[seasonName] || seasonName} ${seasonYear}`,
         subtitle: `Anime from the ${SEASON_LABELS[seasonName] || seasonName} ${seasonYear} season`,
-        icon: SEASON_ICONS[seasonName] || <CalendarDays size={18} className="text-primary" />,
-        iconBg: SEASON_ICON_BG[seasonName] || "bg-primary-light",
+        icon: SEASON_ICONS[seasonName] || <CalendarDays size={18} style={{ color: "var(--color-primary)" }} />,
+        iconBg: SEASON_ICON_BG[seasonName] || "var(--color-primary-light)",
     } : null;
 
     const GENRE_NAMES: Record<number, string> = {
@@ -260,12 +260,8 @@ function BrowseContent() {
                 </div>
                 <div className="flex items-center gap-2">
                     <div
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center ${config.iconBg}`}
-                        style={
-                            type === "season"
-                                ? { backgroundColor: "var(--color-season-icon-bg)" }
-                                : {}
-                        }
+                        className="w-8 h-8 rounded-lg flex items-center justify-center"
+                        style={{ backgroundColor: config.iconBg }}
                     >
                         {config.icon}
                     </div>

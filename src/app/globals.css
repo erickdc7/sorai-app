@@ -56,6 +56,28 @@
     --color-star: #FBBF24;
     --color-season-icon-bg: #FFF3E0;
 
+    /* ── Browse category icons ── */
+    --color-cat-upcoming: #3B82F6;
+    --color-cat-upcoming-bg: #EFF6FF;
+    --color-cat-movies: #F59E0B;
+    --color-cat-movies-bg: #FFFBEB;
+    --color-cat-airing: #22C55E;
+    --color-cat-airing-bg: #F0FDF4;
+    --color-cat-ovaona: #6366F1;
+    --color-cat-ovaona-bg: #EEF2FF;
+    --color-cat-special: #EAB308;
+    --color-cat-special-bg: #FEFCE8;
+
+    /* ── Season archive icons ── */
+    --color-season-winter: #0EA5E9;
+    --color-season-winter-bg: #F0F9FF;
+    --color-season-spring: #EC4899;
+    --color-season-spring-bg: #FDF2F8;
+    --color-season-summer: #F59E0B;
+    --color-season-summer-bg: #FFFBEB;
+    --color-season-fall: #F97316;
+    --color-season-fall-bg: #FFF7ED;
+
     /* ── Footer ── */
     --color-footer-bg: #1A1625;
     --color-footer-heading: #9B6FD0;
