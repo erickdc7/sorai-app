@@ -121,7 +121,7 @@ export default function HeroCarousel({ animes }: HeroCarouselProps) {
                     <h1
                         className="text-white mb-1"
                         style={{
-                            fontSize: "clamp(1.75rem, 4vw, 3rem)",
+                            fontSize: "clamp(1.75rem, 4vw, 3.25rem)",
                             fontWeight: 700,
                             lineHeight: 1.15,
                             letterSpacing: "-0.02em",
