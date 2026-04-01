@@ -26,7 +26,7 @@ const marckScript = Marck_Script({
 });
 
 export const metadata: Metadata = {
-    title: "Sorai — Your Personal Anime Tracker",
+    title: "Sorai",
     description:
         "Explore, search, and organize your personal anime list. Track what you watch, your scores, and much more.",
 };
