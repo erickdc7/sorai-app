@@ -40,6 +40,7 @@ function SearchContent() {
     const FETCH_LIMIT = 16;
 
     const getResultsLabel = () => {
+        if (totalPages <= 1) return `${results.length} result${results.length !== 1 ? "s" : ""}`;
         const estimated = totalPages * DISPLAY_LIMIT;
         if (estimated <= 50) return `${estimated} results`;
         const rounded = Math.floor(estimated / 50) * 50;
