@@ -111,7 +111,7 @@ export default function Footer() {
                 className="border-t"
                 style={{ borderColor: "var(--color-glass-white-08)" }}
             >
-                <div className="max-w-container mx-auto px-6 md:px-10 h-14 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-500">
+                <div className="max-w-container mx-auto px-6 md:px-10 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-500">
                     <span>
                         Powered by{" "}
                         <a
