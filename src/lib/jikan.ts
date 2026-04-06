@@ -145,7 +145,8 @@ export async function searchAnime(
     query: string,
     page: number = 1,
     limit: number = 16,
-    sfw: boolean = true
+    sfw: boolean = true,
+    type?: string
 ) {
     const data = await jikanFetch<{
         data: any[];
@@ -154,7 +155,7 @@ export async function searchAnime(
             has_next_page: boolean;
             current_page: number;
         };
-    }>(`/anime?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}${sfw ? "&sfw" : ""}`);
+    }>(`/anime?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}${sfw ? "&sfw" : ""}${type ? `&type=${type}` : ""}`);
     return data;
 }
 

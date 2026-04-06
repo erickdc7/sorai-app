@@ -34,10 +34,21 @@ function SearchContent() {
     const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [typeFilter, setTypeFilter] = useState<string>("all");
     const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
     const DISPLAY_LIMIT = 12;
     const FETCH_LIMIT = 16;
+
+    const TYPE_FILTERS = [
+        { value: "all", label: "All" },
+        { value: "tv", label: "TV" },
+        { value: "movie", label: "Movie" },
+        { value: "ova", label: "OVA" },
+        { value: "ona", label: "ONA" },
+        { value: "special", label: "Special" },
+        { value: "music", label: "Music" },
+    ];
 
     const getResultsLabel = () => {
         if (totalPages <= 1) return `${results.length} result${results.length !== 1 ? "s" : ""}`;
@@ -48,7 +59,7 @@ function SearchContent() {
     };
 
     const fetchResults = useCallback(
-        async (page: number) => {
+        async (page: number, type: string = typeFilter) => {
             if (!query) {
                 setResults([]);
                 setTotalPages(1);
@@ -58,7 +69,8 @@ function SearchContent() {
             setLoading(true);
             setError(null);
             try {
-                const data = await searchAnime(query, page, FETCH_LIMIT, !showSensitive);
+                const apiType = type === "all" ? undefined : type;
+                const data = await searchAnime(query, page, FETCH_LIMIT, !showSensitive, apiType);
                 const mapped = data.data.map(mapToCardData);
                 const unique = mapped.filter(
                     (anime, index, self) => self.findIndex((a) => a.mal_id === anime.mal_id) === index
@@ -75,13 +87,24 @@ function SearchContent() {
             }
             setLoading(false);
         },
-        [query, showSensitive]
+        [query, showSensitive, typeFilter]
     );
 
     useEffect(() => {
         setCurrentPage(1);
-        fetchResults(1);
-    }, [query, fetchResults]);
+        setTypeFilter("all");
+        fetchResults(1, "all");
+    }, [query]);
+
+    useEffect(() => {
+        setCurrentPage(1);
+        fetchResults(1, typeFilter);
+    }, [typeFilter]);
+
+    const handleFilterChange = (type: string) => {
+        if (type === typeFilter) return;
+        setTypeFilter(type);
+    };
 
     const handlePageChange = (page: number) => {
         if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -132,7 +155,7 @@ function SearchContent() {
     return (
         <main className="max-w-container mx-auto px-6 md:px-10 py-10">
             {/* Header */}
-            <div className="mb-8">
+            <div className="mb-6">
                 {query ? (
                     <>
                         <div className="flex items-center gap-2 mb-1">
@@ -156,6 +179,35 @@ function SearchContent() {
                     </>
                 )}
             </div>
+
+            {/* Type Filters */}
+            {query && (
+                <div className="flex flex-wrap gap-2 mb-8">
+                    {TYPE_FILTERS.map((filter) => (
+                        <button
+                            key={filter.value}
+                            onClick={() => handleFilterChange(filter.value)}
+                            className="px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200"
+                            style={{
+                                backgroundColor: typeFilter === filter.value
+                                    ? "var(--color-primary)"
+                                    : "var(--color-surface)",
+                                color: typeFilter === filter.value
+                                    ? "white"
+                                    : "var(--color-text-secondary)",
+                                boxShadow: typeFilter === filter.value
+                                    ? "var(--shadow-card-hover)"
+                                    : "var(--shadow-soft)",
+                                border: typeFilter === filter.value
+                                    ? "1px solid var(--color-primary)"
+                                    : "1px solid var(--color-border)",
+                            }}
+                        >
+                            {filter.label}
+                        </button>
+                    ))}
+                </div>
+            )}
 
             {/* Error */}
             {error && (
@@ -218,7 +270,7 @@ function SearchContent() {
                         No results
                     </h3>
                     <p className="text-gray-400 text-sm">
-                        No results found for &ldquo;{query}&rdquo;
+                        No results found for &ldquo;{query}&rdquo;{typeFilter !== "all" ? ` with type "${TYPE_FILTERS.find(f => f.value === typeFilter)?.label}"` : ""}
                     </p>
                 </div>
             ) : null}
