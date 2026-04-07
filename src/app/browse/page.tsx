@@ -130,11 +130,26 @@ function BrowseContent() {
 
     const config = seasonArchiveConfig || genreConfig || PAGE_CONFIG[type] || PAGE_CONFIG.popular;
 
+    // Pages that are already type-specific — no filter needed
+    const FORMAT_TYPES = ["ona", "ova", "special", "movies"];
+    const showTypeFilter = !FORMAT_TYPES.includes(type);
+
+    const TYPE_FILTERS = [
+        { value: "all", label: "All" },
+        { value: "tv", label: "TV" },
+        { value: "movie", label: "Movie" },
+        { value: "ova", label: "OVA" },
+        { value: "ona", label: "ONA" },
+        { value: "special", label: "Special" },
+        { value: "music", label: "Music" },
+    ];
+
     const [results, setResults] = useState<AnimeCardData[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [typeFilter, setTypeFilter] = useState<string>("all");
     const { profile } = useAuth();
     const showSensitive = profile?.show_sensitive_content ?? false;
     const sfw = !showSensitive;
@@ -143,23 +158,24 @@ function BrowseContent() {
     const FETCH_LIMIT = 16; // overfetch to compensate for API duplicates
 
     const fetchData = useCallback(
-        async (page: number) => {
+        async (page: number, filterType: string = typeFilter) => {
             setLoading(true);
             setError(null);
+            const apiType = filterType === "all" ? undefined : filterType;
             try {
                 let result;
                 if (genreId) {
-                    result = await getAnimeByGenre(genreId, FETCH_LIMIT, page, sfw);
+                    result = await getAnimeByGenre(genreId, FETCH_LIMIT, page, sfw, apiType);
                 } else if (type === "season-archive" && seasonYear && seasonName) {
-                    result = await getSeasonByYear(seasonYear, seasonName, FETCH_LIMIT, page, sfw);
+                    result = await getSeasonByYear(seasonYear, seasonName, FETCH_LIMIT, page, sfw, apiType);
                 } else if (type === "season") {
-                    result = await getSeasonNow(FETCH_LIMIT, page, sfw);
+                    result = await getSeasonNow(FETCH_LIMIT, page, sfw, apiType);
                 } else if (type === "upcoming") {
-                    result = await getSeasonUpcoming(FETCH_LIMIT, page, sfw);
+                    result = await getSeasonUpcoming(FETCH_LIMIT, page, sfw, apiType);
                 } else if (type === "movies") {
                     result = await getTopAnime("bypopularity", FETCH_LIMIT, page, "movie", sfw);
                 } else if (type === "airing") {
-                    result = await getTopAnime("airing", FETCH_LIMIT, page, undefined, sfw);
+                    result = await getTopAnime("airing", FETCH_LIMIT, page, apiType, sfw);
                 } else if (type === "ona") {
                     result = await getTopAnime("bypopularity", FETCH_LIMIT, page, "ona", sfw);
                 } else if (type === "ova") {
@@ -167,7 +183,8 @@ function BrowseContent() {
                 } else if (type === "special") {
                     result = await getTopAnime("bypopularity", FETCH_LIMIT, page, "special", sfw);
                 } else {
-                    result = await getTopAnime("bypopularity", FETCH_LIMIT, page, undefined, sfw);
+                    // popular
+                    result = await getTopAnime("bypopularity", FETCH_LIMIT, page, apiType, sfw);
                 }
                 const mapped = result.data.map(mapToCardData);
                 const unique = mapped.filter(
@@ -185,14 +202,29 @@ function BrowseContent() {
             }
             setLoading(false);
         },
-        [type, genreId, seasonYear, seasonName, sfw]
+        [type, genreId, seasonYear, seasonName, sfw, typeFilter]
     );
 
+    // Reset filter and fetch when category changes
     useEffect(() => {
         setResults([]);
         setCurrentPage(1);
-        fetchData(1);
-    }, [type, fetchData]);
+        setTypeFilter("all");
+        fetchData(1, "all");
+    }, [type, genreId, seasonYear, seasonName]);
+
+    // Fetch when filter changes
+    useEffect(() => {
+        if (typeFilter !== "all") {
+            setCurrentPage(1);
+            fetchData(1, typeFilter);
+        }
+    }, [typeFilter]);
+
+    const handleFilterChange = (filter: string) => {
+        if (filter === typeFilter) return;
+        setTypeFilter(filter);
+    };
 
     const handlePageChange = (page: number) => {
         fetchData(page);
@@ -245,7 +277,7 @@ function BrowseContent() {
     return (
         <main className="max-w-container mx-auto px-6 md:px-10 py-10">
             {/* Header */}
-            <div className="mb-8">
+            <div className="mb-6">
                 <div className="flex items-center gap-3 mb-4">
                     <Link
                         href="/"
@@ -273,6 +305,35 @@ function BrowseContent() {
                     {config.subtitle}
                 </p>
             </div>
+
+            {/* Type Filters */}
+            {showTypeFilter && (
+                <div className="flex flex-wrap gap-2 mb-8">
+                    {TYPE_FILTERS.map((filter) => (
+                        <button
+                            key={filter.value}
+                            onClick={() => handleFilterChange(filter.value)}
+                            className="px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200"
+                            style={{
+                                backgroundColor: typeFilter === filter.value
+                                    ? "var(--color-primary)"
+                                    : "var(--color-surface)",
+                                color: typeFilter === filter.value
+                                    ? "white"
+                                    : "var(--color-text-secondary)",
+                                boxShadow: typeFilter === filter.value
+                                    ? "var(--shadow-card-hover)"
+                                    : "var(--shadow-soft)",
+                                border: typeFilter === filter.value
+                                    ? "1px solid var(--color-primary)"
+                                    : "1px solid var(--color-border)",
+                            }}
+                        >
+                            {filter.label}
+                        </button>
+                    ))}
+                </div>
+            )}
 
             {/* Error */}
             {error && (
