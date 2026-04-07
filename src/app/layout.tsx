@@ -26,9 +26,51 @@ const marckScript = Marck_Script({
 });
 
 export const metadata: Metadata = {
-    title: "Sorai",
+    metadataBase: new URL("https://sorai-app.vercel.app"),
+    title: {
+        default: "Sorai",
+        template: "%s | Sorai",
+    },
     description:
         "Explore, search, and organize your personal anime list. Track what you watch, your scores, and much more.",
+    openGraph: {
+        title: "Sorai",
+        description:
+            "Your personal anime tracker. Explore, search, and organize your anime list.",
+        url: "https://sorai-app.vercel.app",
+        siteName: "Sorai",
+        images: [
+            {
+                url: "/icon.png",
+                width: 512,
+                height: 512,
+                alt: "Sorai Logo",
+            },
+        ],
+        locale: "en_US",
+        type: "website",
+    },
+    twitter: {
+        card: "summary",
+        title: "Sorai",
+        description:
+            "Your personal anime tracker. Explore, search, and organize your anime list.",
+        images: ["/icon.png"],
+    },
+    robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+            index: true,
+            follow: true,
+            "max-image-preview": "large",
+        },
+    },
+    icons: {
+        icon: "/icon.png",
+        shortcut: "/icon.png",
+        apple: "/icon.png",
+    },
 };
 
 export default function RootLayout({
