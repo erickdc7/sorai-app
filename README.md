@@ -7,6 +7,8 @@ A modern, full-stack web application to explore, search, and organize your perso
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3-06B6D4?logo=tailwindcss&logoColor=white)
 ![Supabase](https://img.shields.io/badge/Supabase-Auth_%2B_DB-3FCF8E?logo=supabase&logoColor=white)
 
+![Sorai Preview](public/images/preview.png)
+
 ---
 
 ## Features
