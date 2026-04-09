@@ -9,7 +9,7 @@ import AuthModal from "@/components/AuthModal";
 import HeroCarousel from "@/components/HeroCarousel";
 import AnimeCard from "@/components/AnimeCard";
 import AnimeCardSkeleton from "@/components/AnimeCardSkeleton";
-import { getTopAnime, getSeasonNow, JikanError } from "@/lib/jikan";
+import { getTopAnime, getSeasonNow, getAnimeById, JikanError } from "@/lib/jikan";
 import { useAuth } from "@/context/AuthContext";
 import { AnimeCardData } from "@/types/anime";
 
@@ -24,7 +24,7 @@ function mapToCardData(anime: any): AnimeCardData {
     };
 }
 
-function mapToHeroData(anime: any) {
+function mapToHeroData(anime: any, backgroundUrl: string) {
     return {
         mal_id: anime.mal_id,
         title: anime.title,
@@ -35,7 +35,7 @@ function mapToHeroData(anime: any) {
         episodes: anime.episodes,
         status: anime.status,
         synopsis: anime.synopsis,
-        image_url: anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url || "",
+        image_url: backgroundUrl,
         genres: [
             ...(anime.genres || []),
             ...(anime.themes || []),
@@ -43,6 +43,15 @@ function mapToHeroData(anime: any) {
         studios: (anime.studios || []).map((s: any) => s.name),
     };
 }
+
+// Hardcoded hero anime IDs with local background images
+const HERO_ANIME = [
+    { mal_id: 16498, bg: "/images/16498.webp" },   // Shingeki no Kyojin
+    { mal_id: 1535,  bg: "/images/1535.webp" },     // Death Note
+    { mal_id: 5114,  bg: "/images/5114.webp" },     // Fullmetal Alchemist: Brotherhood
+    { mal_id: 30276, bg: "/images/30276.webp" },  // One Punch Man
+    { mal_id: 38000, bg: "/images/38000.webp" },    // Kimetsu no Yaiba
+];
 
 export default function HomePage() {
     const { user, setOpenModal, profile } = useAuth();
@@ -57,16 +66,22 @@ export default function HomePage() {
         setLoading(true);
         setError(null);
         try {
-            // Fetch hero (top by score), popular, and seasonal — stagger to avoid 429
-            const topResult = await getTopAnime("bypopularity", 18, 1, undefined, !showSensitive);
+            // Fetch hero animes from hardcoded IDs
+            const heroPromises = HERO_ANIME.map(async (hero, i) => {
+                if (i > 0) await new Promise((r) => setTimeout(r, 350 * i));
+                const data = await getAnimeById(hero.mal_id);
+                return mapToHeroData(data, hero.bg);
+            });
+            const heroResults = await Promise.all(heroPromises);
+            setHeroAnimes(heroResults);
 
-            // Use the top 5 for hero, rest for the popular section
-            setHeroAnimes(topResult.data.slice(0, 5).map(mapToHeroData));
-            setPopular(topResult.data.slice(0, 12).map(mapToCardData));
-
-            // Small delay to respect Jikan rate limiting
+            // Fetch popular anime separately
             await new Promise((r) => setTimeout(r, 400));
+            const popularResult = await getTopAnime("bypopularity", 12, 1, undefined, !showSensitive);
+            setPopular(popularResult.data.map(mapToCardData));
 
+            // Fetch seasonal anime
+            await new Promise((r) => setTimeout(r, 400));
             const seasonResult = await getSeasonNow(12, 1, !showSensitive);
             setSeason(seasonResult.data.map(mapToCardData));
         } catch (err) {
