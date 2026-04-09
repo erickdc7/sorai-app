@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { Star, Play } from "lucide-react";
 
@@ -26,6 +26,7 @@ interface HeroCarouselProps {
 export default function HeroCarousel({ animes }: HeroCarouselProps) {
     const [current, setCurrent] = useState(0);
     const [transitioning, setTransitioning] = useState(false);
+    const dragRef = useRef({ startX: 0, isDragging: false, wasDragged: false });
 
     const goTo = useCallback(
         (index: number) => {
@@ -44,11 +45,45 @@ export default function HeroCarousel({ animes }: HeroCarouselProps) {
         [current, animes.length, goTo]
     );
 
+    const prev = useCallback(
+        () => goTo((current - 1 + animes.length) % animes.length),
+        [current, animes.length, goTo]
+    );
+
     useEffect(() => {
         if (animes.length <= 1) return;
         const timer = setInterval(next, 6000);
         return () => clearInterval(timer);
     }, [next, animes.length]);
+
+    // Drag / swipe handlers
+    const handleDragStart = (clientX: number) => {
+        dragRef.current = { startX: clientX, isDragging: true, wasDragged: false };
+    };
+
+    const handleDragEnd = (clientX: number) => {
+        if (!dragRef.current.isDragging) return;
+        const diff = dragRef.current.startX - clientX;
+        const threshold = 50;
+        if (Math.abs(diff) > threshold) {
+            dragRef.current.wasDragged = true;
+            if (diff > 0) next();
+            else prev();
+        }
+        dragRef.current.isDragging = false;
+    };
+
+    const handleDragCancel = () => {
+        dragRef.current.isDragging = false;
+    };
+
+    // Prevent navigation on links when user was swiping
+    const handleClick = (e: React.MouseEvent) => {
+        if (dragRef.current.wasDragged) {
+            e.preventDefault();
+            dragRef.current.wasDragged = false;
+        }
+    };
 
     if (animes.length === 0) return null;
 
@@ -56,7 +91,17 @@ export default function HeroCarousel({ animes }: HeroCarouselProps) {
     const isAiring = anime.status === "Currently Airing";
 
     return (
-        <div className="relative w-full overflow-hidden" style={{ height: "560px" }}>
+        <div
+            className="relative w-full overflow-hidden"
+            style={{ height: "560px" }}
+            onMouseDown={(e) => handleDragStart(e.clientX)}
+            onMouseMove={() => {}}
+            onMouseUp={(e) => handleDragEnd(e.clientX)}
+            onMouseLeave={handleDragCancel}
+            onTouchStart={(e) => handleDragStart(e.touches[0].clientX)}
+            onTouchEnd={(e) => handleDragEnd(e.changedTouches[0].clientX)}
+            onClick={handleClick}
+        >
             {/* Background image */}
             <div
                 className="absolute inset-0 transition-opacity duration-500"
