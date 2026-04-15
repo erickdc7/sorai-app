@@ -120,14 +120,6 @@ export default function AuthModal() {
             onClick={(e) => e.target === e.currentTarget && handleClose()}
         >
             <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-modal-in">
-                {/* Gradient header */}
-                <div
-                    className="h-2 w-full"
-                    style={{
-                        background: "linear-gradient(90deg, var(--color-primary), var(--color-primary-gradient))",
-                    }}
-                />
-
                 <div className="p-8">
                     {/* Header */}
                     <div className="flex items-start justify-between mb-6">
