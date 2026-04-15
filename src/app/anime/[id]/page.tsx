@@ -74,11 +74,27 @@ const statusBorderColors: Record<string, string> = {
 };
 
 /**
+ * Validates that an embed URL is from a trusted YouTube domain.
+ * Prevents injection of malicious URLs via compromised API data.
+ */
+function isValidYouTubeEmbedUrl(url: string | undefined | null): boolean {
+    if (!url) return false;
+    try {
+        const parsed = new URL(url);
+        return ["www.youtube.com", "youtube.com", "www.youtube-nocookie.com"].includes(
+            parsed.hostname
+        );
+    } catch {
+        return false;
+    }
+}
+
+/**
  * Extracts YouTube video ID from a Jikan embed_url and returns HD thumbnail URLs.
  * maxresdefault (1280x720) may not exist; hqdefault (480x360) always exists.
  */
 function getYouTubeThumbnails(embedUrl: string | undefined | null): { maxres: string; hq: string } | null {
-    if (!embedUrl) return null;
+    if (!embedUrl || !isValidYouTubeEmbedUrl(embedUrl)) return null;
     const match = embedUrl.match(/\/embed\/([a-zA-Z0-9_-]+)/);
     if (!match) return null;
     return {
@@ -827,7 +843,7 @@ export default function AnimeDetailPage({
                                 <Play size={16} className="text-text-secondary" />
                                 Trailer
                             </h2>
-                            {anime.trailer?.embed_url ? (
+                            {anime.trailer?.embed_url && isValidYouTubeEmbedUrl(anime.trailer.embed_url) ? (
                                 <div
                                     className="rounded-2xl overflow-hidden bg-white"
                                     style={{ boxShadow: "var(--shadow-info-card)" }}

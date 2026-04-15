@@ -158,6 +158,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const signOutFn = useCallback(async () => {
         await supabase.auth.signOut();
         setProfile(null);
+        // Clear Jikan API cache to prevent stale sensitive-content data
+        if (typeof window !== "undefined") {
+            sessionStorage.clear();
+        }
     }, [supabase]);
 
     const username =

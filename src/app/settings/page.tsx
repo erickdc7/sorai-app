@@ -143,6 +143,14 @@ export default function SettingsPage() {
             toast.error("Username cannot be empty");
             return;
         }
+        if (newUsername.trim().length > 30) {
+            toast.error("Username cannot exceed 30 characters");
+            return;
+        }
+        if (!/^[a-zA-Z0-9_-]+$/.test(newUsername.trim())) {
+            toast.error("Username can only contain letters, numbers, underscores and hyphens");
+            return;
+        }
         if (newUsername.trim() === username) return;
 
         setSavingUsername(true);
@@ -383,6 +391,7 @@ export default function SettingsPage() {
                                         type="text"
                                         value={newUsername}
                                         onChange={(e) => setNewUsername(e.target.value)}
+                                        maxLength={30}
                                         className="flex-1 h-10 px-4 bg-surface-hover rounded-xl border border-border text-sm text-text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 transition-colors"
                                     />
                                     <button

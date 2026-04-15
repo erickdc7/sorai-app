@@ -56,6 +56,18 @@ export default function AuthModal() {
         setError("");
 
         if (isRegister) {
+            if (!usernameField.trim()) {
+                setError("Username is required.");
+                return;
+            }
+            if (usernameField.trim().length > 30) {
+                setError("Username cannot exceed 30 characters.");
+                return;
+            }
+            if (!/^[a-zA-Z0-9_-]+$/.test(usernameField.trim())) {
+                setError("Username can only contain letters, numbers, underscores and hyphens.");
+                return;
+            }
             if (password !== confirmPassword) {
                 setError("Passwords do not match.");
                 return;
@@ -175,6 +187,7 @@ export default function AuthModal() {
                                         value={usernameField}
                                         onChange={(e) => setUsernameField(e.target.value)}
                                         placeholder="my_username"
+                                        maxLength={30}
                                         className="w-full h-11 pl-9 pr-4 bg-surface-hover rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 text-text-primary placeholder-gray-400 transition-colors"
                                         required
                                     />

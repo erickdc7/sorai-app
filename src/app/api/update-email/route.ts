@@ -1,5 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(req: NextRequest) {
     try {
@@ -13,12 +16,18 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Email is required" }, { status: 400 });
         }
 
+        // Validate email format server-side
+        if (!EMAIL_REGEX.test(email.trim())) {
+            return NextResponse.json({ error: "Invalid email format" }, { status: 400 });
+        }
+
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
         const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
         if (!serviceRoleKey) {
+            console.error("SUPABASE_SERVICE_ROLE_KEY is not configured");
             return NextResponse.json(
-                { error: "Server configuration error: service role key not set" },
+                { error: "Server configuration error" },
                 { status: 500 }
             );
         }
@@ -35,6 +44,15 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Invalid session" }, { status: 401 });
         }
 
+        // Rate limit: max 3 email changes per minute per user
+        const { success } = rateLimit(`update-email:${user.id}`, 3, 60 * 1000);
+        if (!success) {
+            return NextResponse.json(
+                { error: "Too many requests. Please try again later." },
+                { status: 429 }
+            );
+        }
+
         // Use admin client to update email without confirmation
         const adminClient = createClient(supabaseUrl, serviceRoleKey, {
             auth: { autoRefreshToken: false, persistSession: false },
@@ -42,11 +60,12 @@ export async function POST(req: NextRequest) {
 
         const { error: updateError } = await adminClient.auth.admin.updateUserById(
             user.id,
-            { email }
+            { email: email.trim() }
         );
 
         if (updateError) {
-            return NextResponse.json({ error: updateError.message }, { status: 400 });
+            console.error("Failed to update email:", updateError.message);
+            return NextResponse.json({ error: "Failed to update email. Please try again." }, { status: 400 });
         }
 
         return NextResponse.json({ success: true });
