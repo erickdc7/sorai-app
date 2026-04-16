@@ -28,14 +28,17 @@ function SearchContent() {
     const router = useRouter();
     const { profile } = useAuth();
     const query = searchParams.get("q") || "";
+    const urlFilter = searchParams.get("filter") || "all";
+    const urlPage = parseInt(searchParams.get("page") || "1");
     const showSensitive = profile?.show_sensitive_content ?? false;
     const [results, setResults] = useState<AnimeCardData[]>([]);
-    const [currentPage, setCurrentPage] = useState(1);
+    const [currentPage, setCurrentPage] = useState(urlPage);
     const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [typeFilter, setTypeFilter] = useState<string>("all");
+    const [typeFilter, setTypeFilter] = useState<string>(urlFilter);
     const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+    const prevQueryRef = useRef(query);
 
     const DISPLAY_LIMIT = 12;
     const FETCH_LIMIT = 16;
@@ -57,6 +60,15 @@ function SearchContent() {
         const rounded = Math.floor(estimated / 50) * 50;
         return `More than ${rounded} results`;
     };
+
+    const buildUrl = useCallback((overrides: { filter?: string; page?: number }) => {
+        const params = new URLSearchParams(searchParams.toString());
+        const f = overrides.filter ?? typeFilter;
+        const p = overrides.page ?? currentPage;
+        if (f && f !== "all") params.set("filter", f); else params.delete("filter");
+        if (p > 1) params.set("page", String(p)); else params.delete("page");
+        return `/search?${params.toString()}`;
+    }, [searchParams, typeFilter, currentPage]);
 
     const fetchResults = useCallback(
         async (page: number, type: string = typeFilter) => {
@@ -90,26 +102,33 @@ function SearchContent() {
         [query, showSensitive, typeFilter]
     );
 
+    // Reset filter/page only when the search query itself changes
     useEffect(() => {
-        setCurrentPage(1);
-        setTypeFilter("all");
-        fetchResults(1, "all");
+        if (prevQueryRef.current !== query) {
+            prevQueryRef.current = query;
+            setCurrentPage(1);
+            setTypeFilter("all");
+            fetchResults(1, "all");
+        } else {
+            fetchResults(urlPage, urlFilter);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [query]);
-
-    useEffect(() => {
-        setCurrentPage(1);
-        fetchResults(1, typeFilter);
-    }, [typeFilter]);
 
     const handleFilterChange = (type: string) => {
         if (type === typeFilter) return;
         setTypeFilter(type);
+        setCurrentPage(1);
+        fetchResults(1, type);
+        router.push(buildUrl({ filter: type, page: 1 }), { scroll: false });
     };
 
     const handlePageChange = (page: number) => {
         if (debounceRef.current) clearTimeout(debounceRef.current);
         debounceRef.current = setTimeout(() => {
+            setCurrentPage(page);
             fetchResults(page);
+            router.push(buildUrl({ page }), { scroll: false });
             window.scrollTo({ top: 0, behavior: "smooth" });
         }, 400);
     };
