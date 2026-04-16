@@ -78,7 +78,7 @@ export default function MyListPage() {
         if (!user) return;
 
         const fetchList = async () => {
-            setLoading(true);
+            setLoading((prev) => list.length === 0);
             try {
                 const data = await getUserAnimeList(supabase, user.id);
                 setList(data);
@@ -89,7 +89,8 @@ export default function MyListPage() {
         };
 
         fetchList();
-    }, [user, supabase]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user?.id, supabase]);
 
     // Filter by search query
     const filteredList = searchQuery.trim()
