@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { TrendingUp, Sparkles, ChevronLeft, ChevronRight, Clock, Film, Tag, Radio, Tv, Star, CalendarDays, Snowflake, Flower2, Sun, Leaf } from "lucide-react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
@@ -87,11 +87,16 @@ const PAGE_CONFIG: Record<string, { title: string; subtitle: string; icon: React
 
 function BrowseContent() {
     const searchParams = useSearchParams();
+    const router = useRouter();
     const type = searchParams.get("type") || "popular";
     const genre = searchParams.get("genre");
     const genreId = genre ? parseInt(genre) : null;
     const seasonYear = searchParams.get("year") ? parseInt(searchParams.get("year")!) : null;
     const seasonName = searchParams.get("season") || null;
+
+    // Read filter and page from URL params
+    const urlFilter = searchParams.get("filter") || "all";
+    const urlPage = parseInt(searchParams.get("page") || "1");
 
     const SEASON_ICONS: Record<string, React.ReactNode> = {
         winter: <Snowflake size={18} style={{ color: "var(--color-season-winter)" }} />,
@@ -145,11 +150,11 @@ function BrowseContent() {
     ];
 
     const [results, setResults] = useState<AnimeCardData[]>([]);
-    const [currentPage, setCurrentPage] = useState(1);
+    const [currentPage, setCurrentPage] = useState(urlPage);
     const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [typeFilter, setTypeFilter] = useState<string>("all");
+    const [typeFilter, setTypeFilter] = useState<string>(urlFilter);
     const { profile } = useAuth();
     const showSensitive = profile?.show_sensitive_content ?? false;
     const sfw = !showSensitive;
@@ -205,29 +210,35 @@ function BrowseContent() {
         [type, genreId, seasonYear, seasonName, sfw, typeFilter]
     );
 
-    // Reset filter and fetch when category changes
+    // Build URL with current params + filter/page overrides
+    const buildUrl = useCallback((overrides: { filter?: string; page?: number }) => {
+        const params = new URLSearchParams(searchParams.toString());
+        const f = overrides.filter ?? typeFilter;
+        const p = overrides.page ?? currentPage;
+        if (f && f !== "all") params.set("filter", f); else params.delete("filter");
+        if (p > 1) params.set("page", String(p)); else params.delete("page");
+        return `/browse?${params.toString()}`;
+    }, [searchParams, typeFilter, currentPage]);
+
+    // Initial fetch on mount (reads from URL)
     useEffect(() => {
         setResults([]);
-        setCurrentPage(1);
-        setTypeFilter("all");
-        fetchData(1, "all");
-    }, [type, genreId, seasonYear, seasonName]);
-
-    // Fetch when filter changes
-    useEffect(() => {
-        if (typeFilter !== "all") {
-            setCurrentPage(1);
-            fetchData(1, typeFilter);
-        }
-    }, [typeFilter]);
+        fetchData(urlPage, urlFilter);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleFilterChange = (filter: string) => {
         if (filter === typeFilter) return;
         setTypeFilter(filter);
+        setCurrentPage(1);
+        fetchData(1, filter);
+        router.push(buildUrl({ filter, page: 1 }), { scroll: false });
     };
 
     const handlePageChange = (page: number) => {
+        setCurrentPage(page);
         fetchData(page);
+        router.push(buildUrl({ page }), { scroll: false });
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
