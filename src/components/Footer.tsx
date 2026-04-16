@@ -70,7 +70,7 @@ export default function Footer() {
                             anime. Keep control of everything you watch.
                         </p>
                         <a
-                            href="https://github.com/erickdc7/sorai-app"
+                            href="https://github.com/erickdc7"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 hover:text-white transition-colors"
