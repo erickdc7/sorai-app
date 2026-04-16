@@ -77,13 +77,21 @@ export default function HomePage() {
 
             // Fetch popular anime separately
             await new Promise((r) => setTimeout(r, 400));
-            const popularResult = await getTopAnime("bypopularity", 12, 1, undefined, !showSensitive);
-            setPopular(popularResult.data.map(mapToCardData));
+            const popularResult = await getTopAnime("bypopularity", 16, 1, undefined, !showSensitive);
+            const popularMapped = popularResult.data.map(mapToCardData);
+            const popularUnique = popularMapped.filter(
+                (anime, index, self) => self.findIndex((a) => a.mal_id === anime.mal_id) === index
+            );
+            setPopular(popularUnique.slice(0, 12));
 
             // Fetch seasonal anime
             await new Promise((r) => setTimeout(r, 400));
-            const seasonResult = await getSeasonNow(12, 1, !showSensitive);
-            setSeason(seasonResult.data.map(mapToCardData));
+            const seasonResult = await getSeasonNow(16, 1, !showSensitive);
+            const seasonMapped = seasonResult.data.map(mapToCardData);
+            const seasonUnique = seasonMapped.filter(
+                (anime, index, self) => self.findIndex((a) => a.mal_id === anime.mal_id) === index
+            );
+            setSeason(seasonUnique.slice(0, 12));
         } catch (err) {
             if (err instanceof JikanError && err.status === 429) {
                 setError(err.message);
