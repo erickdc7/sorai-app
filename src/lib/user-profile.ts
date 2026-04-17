@@ -114,10 +114,12 @@ export async function exportUserData(
 
     if (!animeList || animeList.length === 0) return null;
 
+    const NO_SCORE_STATUSES = ["paused", "planned"];
+
     const exportData = animeList.map((item) => ({
         title: item.anime_title,
         status: item.status,
-        score: item.score,
+        score: NO_SCORE_STATUSES.includes(item.status) ? null : item.score,
         type: item.anime_type,
         year: item.anime_year,
         added_at: item.created_at?.split("T")[0] ?? null,

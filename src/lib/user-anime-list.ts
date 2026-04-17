@@ -53,15 +53,25 @@ export async function addAnimeToList(
     return data;
 }
 
+// Statuses that should not have a score
+const NO_SCORE_STATUSES: AnimeStatus[] = ["paused", "planned"];
+
 export async function updateAnimeStatus(
     supabase: SupabaseClient,
     userId: string,
     malId: number,
     status: AnimeStatus
 ): Promise<void> {
+    const updateData: { status: AnimeStatus; score?: null } = { status };
+
+    // Clear score when moving to a status that shouldn't have one
+    if (NO_SCORE_STATUSES.includes(status)) {
+        updateData.score = null;
+    }
+
     const { error } = await supabase
         .from("user_anime_list")
-        .update({ status })
+        .update(updateData)
         .eq("user_id", userId)
         .eq("mal_id", malId);
 

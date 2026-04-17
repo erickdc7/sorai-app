@@ -302,11 +302,21 @@ export default function AnimeDetailPage({
         setActionLoading(false);
     };
 
+    const NO_SCORE_STATUSES: AnimeStatus[] = ["paused", "planned"];
+
     const handleStatusChange = async (status: AnimeStatus) => {
         if (!user) return;
         setShowStatusDropdown(false);
         const prev = userListItem;
-        setUserListItem((prev) => (prev ? { ...prev, status } : prev));
+        setUserListItem((prev) =>
+            prev
+                ? {
+                    ...prev,
+                    status,
+                    score: NO_SCORE_STATUSES.includes(status) ? null : prev.score,
+                }
+                : prev
+        );
 
         try {
             await updateAnimeStatus(supabase, user.id, animeId, status);
@@ -698,7 +708,8 @@ export default function AnimeDetailPage({
                                             )}
                                         </div>
 
-                                        {/* Score dropdown */}
+                                        {/* Score dropdown — hidden for On Hold and Plan to Watch */}
+                                        {userListItem.status !== "paused" && userListItem.status !== "planned" && (
                                         <div className="relative">
                                             <button
                                                 onClick={() => {
@@ -805,6 +816,7 @@ export default function AnimeDetailPage({
                                                 </>
                                             )}
                                         </div>
+                                        )}
                                     </div>
                                 )}
                             </div>

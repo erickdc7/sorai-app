@@ -109,6 +109,8 @@ export default function MyListPage() {
         [] as { status: AnimeStatus; items: UserAnimeListItem[] }[]
     );
 
+    const NO_SCORE_STATUSES: AnimeStatus[] = ["paused", "planned"];
+
     const handleStatusChange = async (
         malId: number,
         newStatus: AnimeStatus
@@ -116,7 +118,13 @@ export default function MyListPage() {
         if (!user) return;
         setList((prev) =>
             prev.map((item) =>
-                item.mal_id === malId ? { ...item, status: newStatus } : item
+                item.mal_id === malId
+                    ? {
+                        ...item,
+                        status: newStatus,
+                        score: NO_SCORE_STATUSES.includes(newStatus) ? null : item.score,
+                    }
+                    : item
             )
         );
         try {
@@ -574,7 +582,8 @@ function ListCard({
                 )}
             </div>
 
-            {/* Score */}
+            {/* Score — hidden for On Hold and Plan to Watch */}
+            {item.status !== "paused" && item.status !== "planned" && (
             <div className="relative hidden sm:block">
                 <button
                     onClick={() => {
@@ -631,6 +640,7 @@ function ListCard({
                     </>
                 )}
             </div>
+            )}
 
             <button
                 onClick={onDelete}
