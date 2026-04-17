@@ -1,8 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import { validateEmail } from "@/lib/validators";
 
 export async function POST(req: NextRequest) {
     try {
@@ -16,9 +15,10 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Email is required" }, { status: 400 });
         }
 
-        // Validate email format server-side
-        if (!EMAIL_REGEX.test(email.trim())) {
-            return NextResponse.json({ error: "Invalid email format" }, { status: 400 });
+        // Validate email format server-side using shared validator
+        const emailError = validateEmail(email);
+        if (emailError) {
+            return NextResponse.json({ error: emailError }, { status: 400 });
         }
 
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;

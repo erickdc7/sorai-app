@@ -14,6 +14,19 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
+import {
+    validateUsername,
+    validateEmail,
+    validatePassword,
+    validateConfirmPassword,
+} from "@/lib/validators";
+
+interface FieldErrors {
+    username?: string | null;
+    email?: string | null;
+    password?: string | null;
+    confirmPassword?: string | null;
+}
 
 export default function AuthModal() {
     const { openModal, setOpenModal, signIn, signUp } = useAuth();
@@ -23,6 +36,7 @@ export default function AuthModal() {
     const [usernameField, setUsernameField] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
+    const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
     const [isLoading, setIsLoading] = useState(false);
 
     const isLogin = openModal === "login";
@@ -36,6 +50,7 @@ export default function AuthModal() {
             setConfirmPassword("");
             setUsernameField("");
             setError("");
+            setFieldErrors({});
             setShowPassword(false);
         }
     }, [isOpen]);
@@ -51,32 +66,71 @@ export default function AuthModal() {
 
     const handleClose = () => setOpenModal(null);
 
+    // Real-time field validation
+    const handleUsernameChange = (value: string) => {
+        setUsernameField(value);
+        if (value) {
+            setFieldErrors((prev) => ({ ...prev, username: validateUsername(value) }));
+        } else {
+            setFieldErrors((prev) => ({ ...prev, username: null }));
+        }
+    };
+
+    const handleEmailChange = (value: string) => {
+        setEmail(value);
+        if (value) {
+            setFieldErrors((prev) => ({ ...prev, email: validateEmail(value) }));
+        } else {
+            setFieldErrors((prev) => ({ ...prev, email: null }));
+        }
+    };
+
+    const handlePasswordChange = (value: string) => {
+        setPassword(value);
+        if (value) {
+            setFieldErrors((prev) => ({ ...prev, password: validatePassword(value) }));
+            if (confirmPassword) {
+                setFieldErrors((prev) => ({
+                    ...prev,
+                    confirmPassword: validateConfirmPassword(value, confirmPassword),
+                }));
+            }
+        } else {
+            setFieldErrors((prev) => ({ ...prev, password: null }));
+        }
+    };
+
+    const handleConfirmPasswordChange = (value: string) => {
+        setConfirmPassword(value);
+        if (value) {
+            setFieldErrors((prev) => ({
+                ...prev,
+                confirmPassword: validateConfirmPassword(password, value),
+            }));
+        } else {
+            setFieldErrors((prev) => ({ ...prev, confirmPassword: null }));
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
 
+        // Validate all fields on submit
+        const errors: FieldErrors = {};
+
         if (isRegister) {
-            if (!usernameField.trim()) {
-                setError("Username is required.");
-                return;
-            }
-            if (usernameField.trim().length > 30) {
-                setError("Username cannot exceed 30 characters.");
-                return;
-            }
-            if (!/^[a-zA-Z0-9_-]+$/.test(usernameField.trim())) {
-                setError("Username can only contain letters, numbers, underscores and hyphens.");
-                return;
-            }
-            if (password !== confirmPassword) {
-                setError("Passwords do not match.");
-                return;
-            }
-            if (password.length < 6) {
-                setError("Password must be at least 6 characters.");
-                return;
-            }
+            errors.username = validateUsername(usernameField);
+            errors.confirmPassword = validateConfirmPassword(password, confirmPassword);
         }
+        errors.email = validateEmail(email);
+        errors.password = isRegister ? validatePassword(password) : (!password ? "Password is required" : null);
+
+        setFieldErrors(errors);
+
+        // Check if any errors exist
+        const hasErrors = Object.values(errors).some((e) => e !== null && e !== undefined);
+        if (hasErrors) return;
 
         setIsLoading(true);
 
@@ -185,13 +239,16 @@ export default function AuthModal() {
                                     <input
                                         type="text"
                                         value={usernameField}
-                                        onChange={(e) => setUsernameField(e.target.value)}
+                                        onChange={(e) => handleUsernameChange(e.target.value)}
                                         placeholder="my_username"
-                                        maxLength={30}
+                                        maxLength={20}
                                         className="w-full h-11 pl-9 pr-4 bg-surface-hover rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 text-text-primary placeholder-gray-400 transition-colors"
                                         required
                                     />
                                 </div>
+                                {fieldErrors.username && (
+                                    <p className="text-red-500 text-xs mt-1">{fieldErrors.username}</p>
+                                )}
                             </div>
                         )}
 
@@ -208,12 +265,16 @@ export default function AuthModal() {
                                 <input
                                     type="email"
                                     value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    onChange={(e) => handleEmailChange(e.target.value)}
                                     placeholder="email@example.com"
+                                    maxLength={254}
                                     className="w-full h-11 pl-9 pr-4 bg-surface-hover rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 text-text-primary placeholder-gray-400 transition-colors"
                                     required
                                 />
                             </div>
+                            {fieldErrors.email && (
+                                <p className="text-red-500 text-xs mt-1">{fieldErrors.email}</p>
+                            )}
                         </div>
 
                         {/* Password */}
@@ -229,8 +290,9 @@ export default function AuthModal() {
                                 <input
                                     type={showPassword ? "text" : "password"}
                                     value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
+                                    onChange={(e) => handlePasswordChange(e.target.value)}
                                     placeholder="••••••••"
+                                    maxLength={64}
                                     className="w-full h-11 pl-9 pr-10 bg-surface-hover rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 text-text-primary placeholder-gray-400 transition-colors"
                                     required
                                 />
@@ -242,6 +304,9 @@ export default function AuthModal() {
                                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                                 </button>
                             </div>
+                            {fieldErrors.password && (
+                                <p className="text-red-500 text-xs mt-1">{fieldErrors.password}</p>
+                            )}
                         </div>
 
                         {/* Confirm password (register only) */}
@@ -258,12 +323,16 @@ export default function AuthModal() {
                                     <input
                                         type="password"
                                         value={confirmPassword}
-                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        onChange={(e) => handleConfirmPasswordChange(e.target.value)}
                                         placeholder="Re-enter your password"
+                                        maxLength={64}
                                         className="w-full h-11 pl-9 pr-4 bg-surface-hover rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 text-text-primary placeholder-gray-400 transition-colors"
                                         required
                                     />
                                 </div>
+                                {fieldErrors.confirmPassword && (
+                                    <p className="text-red-500 text-xs mt-1">{fieldErrors.confirmPassword}</p>
+                                )}
                             </div>
                         )}
 

@@ -26,6 +26,13 @@ import {
     exportUserData,
     deactivateAccount,
 } from "@/lib/user-profile";
+import {
+    validateUsername,
+    validateEmail,
+    validatePassword,
+    validateConfirmPassword,
+    validateAvatarFile,
+} from "@/lib/validators";
 import Navbar from "@/components/Navbar";
 import AuthModal from "@/components/AuthModal";
 import Footer from "@/components/Footer";
@@ -44,6 +51,12 @@ export default function SettingsPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [sensitiveContent, setSensitiveContent] = useState(false);
+
+    // Inline error states
+    const [usernameError, setUsernameError] = useState<string | null>(null);
+    const [emailError, setEmailError] = useState<string | null>(null);
+    const [passwordError, setPasswordError] = useState<string | null>(null);
+    const [confirmPasswordError, setConfirmPasswordError] = useState<string | null>(null);
 
     // Loading states
     const [savingUsername, setSavingUsername] = useState(false);
@@ -102,14 +115,11 @@ export default function SettingsPage() {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Validate
-        const validTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-        if (!validTypes.includes(file.type)) {
-            toast.error("Invalid file type", { description: "Use JPG, PNG, WebP, or GIF." });
-            return;
-        }
-        if (file.size > 2 * 1024 * 1024) {
-            toast.error("File too large", { description: "Max file size is 2MB." });
+        // Validate using shared validator
+        const fileError = validateAvatarFile(file);
+        if (fileError) {
+            toast.error("Invalid file", { description: fileError });
+            if (fileInputRef.current) fileInputRef.current.value = "";
             return;
         }
 
@@ -138,27 +148,27 @@ export default function SettingsPage() {
         setUploadingAvatar(false);
     };
 
+    const handleUsernameChange = (value: string) => {
+        setNewUsername(value);
+        if (value) setUsernameError(validateUsername(value));
+        else setUsernameError(null);
+    };
+
     const handleSaveUsername = async () => {
-        if (!newUsername.trim()) {
-            toast.error("Username cannot be empty");
-            return;
-        }
-        if (newUsername.trim().length > 30) {
-            toast.error("Username cannot exceed 30 characters");
-            return;
-        }
-        if (!/^[a-zA-Z0-9_-]+$/.test(newUsername.trim())) {
-            toast.error("Username can only contain letters, numbers, underscores and hyphens");
+        const error = validateUsername(newUsername);
+        if (error) {
+            setUsernameError(error);
             return;
         }
         if (newUsername.trim() === username) return;
 
         setSavingUsername(true);
         try {
-            const { error } = await supabase.auth.updateUser({
+            const { error: err } = await supabase.auth.updateUser({
                 data: { username: newUsername.trim() },
             });
-            if (error) throw error;
+            if (err) throw err;
+            setUsernameError(null);
             toast.success("Username updated");
         } catch {
             toast.error("Failed to update username");
@@ -166,9 +176,16 @@ export default function SettingsPage() {
         setSavingUsername(false);
     };
 
+    const handleEmailChange = (value: string) => {
+        setNewEmail(value);
+        if (value) setEmailError(validateEmail(value));
+        else setEmailError(null);
+    };
+
     const handleSaveEmail = async () => {
-        if (!newEmail.trim()) {
-            toast.error("Email cannot be empty");
+        const error = validateEmail(newEmail);
+        if (error) {
+            setEmailError(error);
             return;
         }
         if (newEmail.trim() === user.email) return;
@@ -190,8 +207,8 @@ export default function SettingsPage() {
                     description: result.error || "Unknown error",
                 });
             } else {
+                setEmailError(null);
                 toast.success("Email updated successfully");
-                // Refresh session to get updated email
                 await supabase.auth.refreshSession();
             }
         } catch {
@@ -200,19 +217,30 @@ export default function SettingsPage() {
         setSavingEmail(false);
     };
 
+    const handlePasswordChange = (value: string) => {
+        setNewPassword(value);
+        if (value) {
+            setPasswordError(validatePassword(value));
+            if (confirmPassword) {
+                setConfirmPasswordError(validateConfirmPassword(value, confirmPassword));
+            }
+        } else {
+            setPasswordError(null);
+        }
+    };
+
+    const handleConfirmPasswordChange = (value: string) => {
+        setConfirmPassword(value);
+        if (value) setConfirmPasswordError(validateConfirmPassword(newPassword, value));
+        else setConfirmPasswordError(null);
+    };
+
     const handleSavePassword = async () => {
-        if (!newPassword) {
-            toast.error("Password cannot be empty");
-            return;
-        }
-        if (newPassword.length < 6) {
-            toast.error("Password too short", { description: "Minimum 6 characters." });
-            return;
-        }
-        if (newPassword !== confirmPassword) {
-            toast.error("Passwords don't match");
-            return;
-        }
+        const pwError = validatePassword(newPassword);
+        const cpError = validateConfirmPassword(newPassword, confirmPassword);
+        setPasswordError(pwError);
+        setConfirmPasswordError(cpError);
+        if (pwError || cpError) return;
 
         setSavingPassword(true);
         try {
@@ -223,6 +251,8 @@ export default function SettingsPage() {
             toast.success("Password updated");
             setNewPassword("");
             setConfirmPassword("");
+            setPasswordError(null);
+            setConfirmPasswordError(null);
         } catch {
             toast.error("Failed to update password");
         }
@@ -369,7 +399,7 @@ export default function SettingsPage() {
                                         Remove
                                     </button>
                                 )}
-                                <p className="text-xs text-text-secondary">JPG, PNG, WebP or GIF. Max 2MB.</p>
+                                <p className="text-xs text-text-secondary">JPG, PNG or WebP. Max 2MB.</p>
                             </div>
                         </div>
                     </section>
@@ -390,13 +420,13 @@ export default function SettingsPage() {
                                     <input
                                         type="text"
                                         value={newUsername}
-                                        onChange={(e) => setNewUsername(e.target.value)}
-                                        maxLength={30}
+                                        onChange={(e) => handleUsernameChange(e.target.value)}
+                                        maxLength={20}
                                         className="flex-1 h-10 px-4 bg-surface-hover rounded-xl border border-border text-sm text-text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 transition-colors"
                                     />
                                     <button
                                         onClick={handleSaveUsername}
-                                        disabled={savingUsername || newUsername.trim() === username}
+                                        disabled={savingUsername || newUsername.trim() === username || !!usernameError}
                                         className="px-4 h-10 text-sm font-medium text-white rounded-xl transition-all hover:opacity-90 disabled:opacity-50 flex items-center gap-2"
                                         style={{
                                             background: "linear-gradient(135deg, var(--color-primary), var(--color-primary-medium))",
@@ -410,6 +440,7 @@ export default function SettingsPage() {
                                         Save
                                     </button>
                                 </div>
+                                {usernameError && <p className="text-red-500 text-xs mt-1">{usernameError}</p>}
                             </div>
 
                             {/* Email */}
@@ -424,12 +455,13 @@ export default function SettingsPage() {
                                     <input
                                         type="email"
                                         value={newEmail}
-                                        onChange={(e) => setNewEmail(e.target.value)}
+                                        onChange={(e) => handleEmailChange(e.target.value)}
+                                        maxLength={254}
                                         className="flex-1 h-10 px-4 bg-surface-hover rounded-xl border border-border text-sm text-text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 transition-colors"
                                     />
                                     <button
                                         onClick={handleSaveEmail}
-                                        disabled={savingEmail || newEmail.trim() === user.email}
+                                        disabled={savingEmail || newEmail.trim() === user.email || !!emailError}
                                         className="px-4 h-10 text-sm font-medium text-white rounded-xl transition-all hover:opacity-90 disabled:opacity-50 flex items-center gap-2"
                                         style={{
                                             background: "linear-gradient(135deg, var(--color-primary), var(--color-primary-medium))",
@@ -443,6 +475,7 @@ export default function SettingsPage() {
                                         Save
                                     </button>
                                 </div>
+                                {emailError && <p className="text-red-500 text-xs mt-1">{emailError}</p>}
                             </div>
                         </div>
                     </section>
@@ -462,8 +495,9 @@ export default function SettingsPage() {
                                     <input
                                         type={showPassword ? "text" : "password"}
                                         value={newPassword}
-                                        onChange={(e) => setNewPassword(e.target.value)}
-                                        placeholder="Min 6 characters"
+                                        onChange={(e) => handlePasswordChange(e.target.value)}
+                                        placeholder="Min 8 characters"
+                                        maxLength={64}
                                         className="w-full h-10 px-4 pr-10 bg-surface-hover rounded-xl border border-border text-sm text-text-primary placeholder-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 transition-colors"
                                     />
                                     <button
@@ -474,6 +508,7 @@ export default function SettingsPage() {
                                         {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                                     </button>
                                 </div>
+                                {passwordError && <p className="text-red-500 text-xs mt-1">{passwordError}</p>}
                             </div>
                             <div>
                                 <label className="text-xs font-medium text-text-secondary mb-1.5 block">
@@ -483,8 +518,9 @@ export default function SettingsPage() {
                                     <input
                                         type={showConfirmPassword ? "text" : "password"}
                                         value={confirmPassword}
-                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        onChange={(e) => handleConfirmPasswordChange(e.target.value)}
                                         placeholder="Repeat new password"
+                                        maxLength={64}
                                         className="w-full h-10 px-4 pr-10 bg-surface-hover rounded-xl border border-border text-sm text-text-primary placeholder-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 transition-colors"
                                     />
                                     <button
@@ -495,6 +531,7 @@ export default function SettingsPage() {
                                         {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                                     </button>
                                 </div>
+                                {confirmPasswordError && <p className="text-red-500 text-xs mt-1">{confirmPasswordError}</p>}
                             </div>
                             <button
                                 onClick={handleSavePassword}

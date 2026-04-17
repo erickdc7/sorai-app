@@ -6,6 +6,7 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Search, List, LogOut, ChevronDown, Menu, X, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
+import { validateSearch } from "@/lib/validators";
 
 export default function Navbar() {
     return (
@@ -18,6 +19,7 @@ export default function Navbar() {
 function NavbarContent() {
     const { user, isLoading, signOut, setOpenModal, username, profile } = useAuth();
     const [searchQuery, setSearchQuery] = useState("");
+    const [searchError, setSearchError] = useState<string | null>(null);
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [showMobileMenu, setShowMobileMenu] = useState(false);
     const [scrolled, setScrolled] = useState(false);
@@ -34,10 +36,14 @@ function NavbarContent() {
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        if (searchQuery.trim()) {
-            router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-            setShowMobileMenu(false);
+        const error = validateSearch(searchQuery);
+        if (error) {
+            setSearchError(error);
+            return;
         }
+        setSearchError(null);
+        router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+        setShowMobileMenu(false);
     };
 
     const isActive = (path: string) => pathname === path;
@@ -115,11 +121,13 @@ function NavbarContent() {
                             <input
                                 type="text"
                                 value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onChange={(e) => { setSearchQuery(e.target.value); setSearchError(null); }}
                                 placeholder="Search anime..."
+                                maxLength={100}
                                 className="w-full h-9 pl-9 pr-4 rounded-xl border border-border bg-surface-hover text-sm text-text-primary placeholder-gray-400 focus:outline-none focus:border-primary transition-colors"
                             />
                         </div>
+                        {searchError && <p className="text-red-500 text-xs mt-1 px-1">{searchError}</p>}
                     </form>
 
                     {/* Right: Auth */}
@@ -236,11 +244,13 @@ function NavbarContent() {
                                 <input
                                     type="text"
                                     value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onChange={(e) => { setSearchQuery(e.target.value); setSearchError(null); }}
                                     placeholder="Search anime..."
+                                    maxLength={100}
                                     className="w-full h-10 pl-9 pr-4 rounded-xl border border-border bg-surface-hover text-sm text-text-primary placeholder-gray-400 focus:outline-none focus:border-primary"
                                 />
                             </div>
+                            {searchError && <p className="text-red-500 text-xs mt-1 px-1">{searchError}</p>}
                         </form>
                         <Link
                             href="/browse?type=popular"
