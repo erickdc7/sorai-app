@@ -243,6 +243,7 @@ export default function MyListPage() {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Search in my list..."
+                            maxLength={100}
                             className="w-full pl-10 pr-4 h-10 rounded-xl border border-border bg-white text-sm text-text-primary placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                         />
                         {searchQuery && (
