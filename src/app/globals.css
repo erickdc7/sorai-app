@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Hide native browser password reveal button (Edge / Chrome) */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear,
+input[type="password"]::-webkit-credentials-auto-fill-button {
+  display: none;
+}
+
 @layer base {
   :root {
     /* ── Primary ── */
