@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import {
     Plus,
     Star,
@@ -21,32 +20,19 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AuthModal from "@/components/AuthModal";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
-import AnimeHorizontalCarousel, { CarouselAnimeItem } from "@/components/AnimeHorizontalCarousel";
+import AnimeHorizontalCarousel from "@/components/AnimeHorizontalCarousel";
 import { useAuth } from "@/context/AuthContext";
 import { createClient } from "@/lib/supabase";
-import {
-    getAnimeById,
-    getAnimeCharacters,
-    getAnimeEpisodes,
-    getAnimeRelations,
-    getAnimeRecommendations,
-    JikanError,
-} from "@/lib/jikan";
-import {
-    getUserAnimeItem,
-    addAnimeToList,
-    updateAnimeStatus,
-    updateAnimeScore,
-    removeAnimeFromList,
-} from "@/lib/user-anime-list";
-import { AnimeStatus, UserAnimeListItem } from "@/types/anime";
-import type { JikanAnime, JikanCharacter, JikanEpisode, JikanNamedResource } from "@/types/jikan";
+import { getUserAnimeItem } from "@/lib/user-anime-list";
+import { useAnimeDetail } from "@/hooks/useAnimeDetail";
+import { useAnimeListActions } from "@/hooks/useAnimeListActions";
+import { AnimeStatus } from "@/types/anime";
+import type { JikanCharacter, JikanEpisode, JikanNamedResource } from "@/types/jikan";
 import {
     STATUS_LABELS,
     STATUS_COLORS,
     STATUS_BG_COLORS,
     STATUS_BORDER_COLORS,
-    NO_SCORE_STATUSES,
 } from "@/constants/anime-status";
 
 /**
@@ -89,245 +75,72 @@ export default function AnimeDetailPage({
     const { user, setOpenModal } = useAuth();
     const [supabase] = useState(() => createClient());
 
-    const [anime, setAnime] = useState<JikanAnime | null>(null);
-    const [characters, setCharacters] = useState<JikanCharacter[]>([]);
-    const [episodes, setEpisodes] = useState<JikanEpisode[]>([]);
-    const [relatedAnime, setRelatedAnime] = useState<CarouselAnimeItem[]>([]);
-    const [similarAnime, setSimilarAnime] = useState<CarouselAnimeItem[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [loadingRelated, setLoadingRelated] = useState(true);
-    const [loadingSimilar, setLoadingSimilar] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const animeId = Number(id);
 
-    const [userListItem, setUserListItem] = useState<UserAnimeListItem | null>(null);
+    // Data fetching via hook
+    const {
+        anime,
+        characters,
+        episodes,
+        relatedAnime,
+        similarAnime,
+        loading,
+        loadingRelated,
+        loadingSimilar,
+        error,
+    } = useAnimeDetail(animeId);
+
+    // List actions via hook
+    const {
+        userListItem,
+        setUserListItem,
+        actionLoading,
+        handleAddToList: hookAddToList,
+        handleStatusChange: hookStatusChange,
+        handleScoreChange: hookScoreChange,
+        handleRemove: hookRemove,
+    } = useAnimeListActions(supabase, user?.id);
+
     const [showStatusDropdown, setShowStatusDropdown] = useState(false);
     const [showScoreDropdown, setShowScoreDropdown] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showAllEpisodes, setShowAllEpisodes] = useState(false);
-    const [actionLoading, setActionLoading] = useState(false);
     const [showTooltip, setShowTooltip] = useState(false);
 
-    const animeId = Number(id);
-
-    // Fetch anime data
-    const fetchAnimeData = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const [animeData, charsData, epsData] = await Promise.all([
-                getAnimeById(animeId),
-                getAnimeCharacters(animeId).catch(() => []),
-                getAnimeEpisodes(animeId).catch(() => []),
-            ]);
-            setAnime(animeData);
-            setCharacters(charsData.slice(0, 12));
-            setEpisodes(epsData);
-
-            // Staggered fetch for relations and recommendations (avoid 429)
-            setTimeout(async () => {
-                try {
-                    const relData = await getAnimeRelations(animeId);
-                    const relationLabels: Record<string, string> = {
-                        Sequel: "Sequel",
-                        Prequel: "Prequel",
-                        "Alternative setting": "Alternative Setting",
-                        "Alternative version": "Alternative Version",
-                        "Side story": "Side Story",
-                        "Parent story": "Parent Story",
-                        Summary: "Summary",
-                        "Full story": "Full Story",
-                        Spin_off: "Spin-off",
-                        "Spin-off": "Spin-off",
-                        Adaptation: "Adaptation",
-                        Character: "Character",
-                        Other: "Other",
-                    };
-
-                    const relItems: CarouselAnimeItem[] = [];
-                    for (const rel of relData) {
-                        const labelEs = relationLabels[rel.relation] || rel.relation;
-                        for (const entry of rel.entry) {
-                            if (entry.type === "anime") {
-                                relItems.push({
-                                    mal_id: entry.mal_id,
-                                    title: entry.name,
-                                    image_url: "",
-                                    relation: labelEs,
-                                });
-                            }
-                        }
-                    }
-
-                    // Fetch details using cached getAnimeById
-                    const withImages: CarouselAnimeItem[] = [];
-                    for (const item of relItems.slice(0, 10)) {
-                        try {
-                            await new Promise((r) => setTimeout(r, 200));
-                            const d = await getAnimeById(item.mal_id);
-                            withImages.push({
-                                ...item,
-                                image_url:
-                                    d.images?.webp?.large_image_url ||
-                                    d.images?.jpg?.large_image_url ||
-                                    d.images?.jpg?.image_url ||
-                                    "",
-                                type: d.type || null,
-                                year: d.year || d.aired?.prop?.from?.year || null,
-                                score: d.score || null,
-                            });
-                        } catch { }
-                        setRelatedAnime([...withImages]);
-                    }
-                } catch { }
-                setLoadingRelated(false);
-
-                // Delay before recommendations
-                setTimeout(async () => {
-                    try {
-                        const recData = await getAnimeRecommendations(animeId);
-                        const baseItems = recData
-                            .slice(0, 8)
-                            .map((rec) => ({
-                                mal_id: rec.entry?.mal_id,
-                                title: rec.entry?.title || "",
-                                image_url:
-                                    rec.entry?.images?.webp?.large_image_url ||
-                                    rec.entry?.images?.jpg?.large_image_url ||
-                                    rec.entry?.images?.jpg?.image_url ||
-                                    "",
-                                type: null as string | null,
-                                year: null as number | null,
-                                score: null as number | null,
-                            }))
-                            .filter((i) => i.mal_id && i.image_url);
-
-                        // Fetch details using cached getAnimeById
-                        const enriched: CarouselAnimeItem[] = [];
-                        for (const item of baseItems) {
-                            try {
-                                await new Promise((r) => setTimeout(r, 200));
-                                const d = await getAnimeById(item.mal_id);
-                                enriched.push({
-                                    ...item,
-                                    type: d.type || null,
-                                    year: d.year || d.aired?.prop?.from?.year || null,
-                                    score: d.score || null,
-                                });
-                            } catch {
-                                enriched.push(item);
-                            }
-                            setSimilarAnime([...enriched]);
-                        }
-                    } catch { }
-                    setLoadingSimilar(false);
-                }, 600);
-            }, 600);
-        } catch (err) {
-            if (err instanceof JikanError) {
-                setError(err.message);
-            } else {
-                setError("Error loading anime. Please try again.");
-            }
-        }
-        setLoading(false);
-    };
-
     // Check if anime is in user's list
-    const checkUserList = async () => {
-        if (!user) return;
-        try {
-            const item = await getUserAnimeItem(supabase, user.id, animeId);
-            setUserListItem(item);
-        } catch {
-            // Silently fail
-        }
-    };
-
     useEffect(() => {
-        fetchAnimeData();
-    }, [animeId]);
-
-    useEffect(() => {
-        if (user) checkUserList();
-        else setUserListItem(null);
+        if (!user) { setUserListItem(null); return; }
+        getUserAnimeItem(supabase, user.id, animeId)
+            .then(setUserListItem)
+            .catch(() => { });
     }, [user, animeId]);
 
-    // Actions
-    const handleAddToList = async () => {
-        if (!user) {
-            setOpenModal("login");
-            return;
-        }
+    // Wrapper handlers that close dropdowns and pass payloads
+    const handleAddToList = () => {
+        if (!user) { setOpenModal("login"); return; }
         if (!anime) return;
-
-        setActionLoading(true);
-        try {
-            const newItem = await addAnimeToList(supabase, {
-                user_id: user.id,
-                mal_id: animeId,
-                status: "watching",
-                anime_title: anime.title,
-                anime_image_url: anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url || null,
-                anime_year: anime.year ?? null,
-                anime_type: anime.type ?? null,
-            });
-            setUserListItem(newItem);
-        } catch {
-            // Handle error silently
-        }
-        setActionLoading(false);
+        hookAddToList({
+            mal_id: animeId,
+            anime_title: anime.title,
+            anime_image_url: anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url || null,
+            anime_year: anime.year ?? null,
+            anime_type: anime.type ?? null,
+        });
     };
 
-
-    const handleStatusChange = async (status: AnimeStatus) => {
-        if (!user) return;
+    const handleStatusChange = (status: AnimeStatus) => {
         setShowStatusDropdown(false);
-        const prev = userListItem;
-        setUserListItem((prev) =>
-            prev
-                ? {
-                    ...prev,
-                    status,
-                    score: NO_SCORE_STATUSES.includes(status) ? null : prev.score,
-                }
-                : prev
-        );
-
-        try {
-            await updateAnimeStatus(supabase, user.id, animeId, status);
-        } catch {
-            setUserListItem(prev);
-        }
+        hookStatusChange(animeId, status);
     };
 
-    const handleScoreChange = async (score: number) => {
-        if (!user) return;
+    const handleScoreChange = (score: number) => {
         setShowScoreDropdown(false);
-        const prev = userListItem;
-        setUserListItem((prev) => (prev ? { ...prev, score } : prev));
-
-        try {
-            await updateAnimeScore(supabase, user.id, animeId, score);
-        } catch {
-            setUserListItem(prev);
-        }
+        hookScoreChange(animeId, score);
     };
 
-    const handleRemove = async () => {
-        if (!user) return;
+    const handleRemove = () => {
         setShowDeleteModal(false);
-        const prev = userListItem;
-        setUserListItem(null);
-
-        try {
-            await removeAnimeFromList(supabase, user.id, animeId);
-            toast.success("Removed from your list", {
-                description: `${anime?.title || "Anime"} has been removed.`,
-            });
-        } catch {
-            setUserListItem(prev);
-            toast.error("Failed to remove from list");
-        }
+        hookRemove(animeId, anime?.title);
     };
 
     // Loading skeleton
@@ -369,7 +182,7 @@ export default function AnimeDetailPage({
                     <div className="flex gap-3 justify-center">
                         {error && (
                             <button
-                                onClick={fetchAnimeData}
+                                onClick={() => window.location.reload()}
                                 className="text-sm px-4 py-2 rounded-xl text-white bg-primary hover:bg-primary-hover transition-colors"
                             >
                                 Retry

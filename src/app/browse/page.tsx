@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { TrendingUp, Sparkles, ChevronLeft, ChevronRight, Clock, Film, Tag, Radio, Tv, Star, CalendarDays, Snowflake, Flower2, Sun, Leaf } from "lucide-react";
+import { TrendingUp, Sparkles, Clock, Film, Tag, Radio, Tv, Star, CalendarDays, Snowflake, Flower2, Sun, Leaf } from "lucide-react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AuthModal from "@/components/AuthModal";
 import AnimeCard from "@/components/AnimeCard";
-import AnimeCardSkeleton from "@/components/AnimeCardSkeleton";
+import AnimeGridSkeleton from "@/components/AnimeGridSkeleton";
+import Pagination from "@/components/Pagination";
 import { getTopAnime, getSeasonNow, getSeasonUpcoming, getSeasonByYear, getAnimeByGenre, JikanError } from "@/lib/jikan";
 import { mapToCardData, deduplicateByMalId } from "@/lib/mappers";
 import { AnimeCardData } from "@/types/anime";
@@ -222,48 +223,7 @@ function BrowseContent() {
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
-    const renderPageButtons = () => {
-        const pages: (number | string)[] = [];
-        const maxVisiblePages = 5;
 
-        if (totalPages <= maxVisiblePages + 2) {
-            for (let i = 1; i <= totalPages; i++) pages.push(i);
-        } else {
-            pages.push(1);
-            if (currentPage > 3) pages.push("...");
-            const start = Math.max(2, currentPage - 1);
-            const end = Math.min(totalPages - 1, currentPage + 1);
-            for (let i = start; i <= end; i++) pages.push(i);
-            if (currentPage < totalPages - 2) pages.push("...");
-            pages.push(totalPages);
-        }
-
-        return pages.map((p, i) =>
-            typeof p === "string" ? (
-                <span
-                    key={`ellipsis-${i}`}
-                    className="w-9 h-9 flex items-center justify-center text-text-secondary text-sm"
-                >
-                    ...
-                </span>
-            ) : (
-                <button
-                    key={p}
-                    onClick={() => handlePageChange(p)}
-                    className="w-9 h-9 rounded-xl text-sm transition-colors"
-                    style={{
-                        backgroundColor:
-                            currentPage === p ? "var(--color-primary)" : "transparent",
-                        color: currentPage === p ? "white" : "var(--color-text-secondary)",
-                        border:
-                            currentPage === p ? "none" : "1px solid var(--color-border)",
-                    }}
-                >
-                    {p}
-                </button>
-            )
-        );
-    };
 
     return (
         <main className="max-w-container mx-auto px-6 md:px-10 py-10">
@@ -342,41 +302,19 @@ function BrowseContent() {
             {/* Results */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-10">
                 {loading
-                    ? Array.from({ length: 12 }).map((_, i) => (
-                        <AnimeCardSkeleton key={i} />
-                    ))
+                    ? <AnimeGridSkeleton count={12} />
                     : results.map((anime) => (
                         <AnimeCard key={anime.mal_id} anime={anime} />
                     ))}
             </div>
 
             {/* Pagination */}
-            {!loading && totalPages > 1 && (
-                <div className="flex items-center justify-center gap-2">
-                    <button
-                        onClick={() =>
-                            handlePageChange(Math.max(1, currentPage - 1))
-                        }
-                        disabled={currentPage === 1}
-                        className="w-9 h-9 flex items-center justify-center rounded-xl border border-border text-text-secondary hover:bg-surface-alt disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                    >
-                        <ChevronLeft size={16} />
-                    </button>
-
-                    {renderPageButtons()}
-
-                    <button
-                        onClick={() =>
-                            handlePageChange(
-                                Math.min(totalPages, currentPage + 1)
-                            )
-                        }
-                        disabled={currentPage === totalPages}
-                        className="w-9 h-9 flex items-center justify-center rounded-xl border border-border text-text-secondary hover:bg-surface-alt disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                    >
-                        <ChevronRight size={16} />
-                    </button>
-                </div>
+            {!loading && (
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                />
             )}
         </main>
     );
@@ -390,11 +328,7 @@ export default function BrowsePage() {
             <Suspense
                 fallback={
                     <main className="max-w-container mx-auto px-6 md:px-10 py-10">
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                            {Array.from({ length: 12 }).map((_, i) => (
-                                <AnimeCardSkeleton key={i} />
-                            ))}
-                        </div>
+                        <AnimeGridSkeleton count={12} />
                     </main>
                 }
             >
