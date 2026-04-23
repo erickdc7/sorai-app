@@ -28,30 +28,14 @@ import {
     removeAnimeFromList,
 } from "@/lib/user-anime-list";
 import { AnimeStatus, UserAnimeListItem } from "@/types/anime";
+import {
+    STATUS_LABELS,
+    STATUS_COLORS,
+    STATUS_ORDER,
+    NO_SCORE_STATUSES,
+} from "@/constants/anime-status";
 
-const statusLabels: Record<string, string> = {
-    watching: "Watching",
-    completed: "Completed",
-    paused: "On Hold",
-    dropped: "Dropped",
-    planned: "Plan to Watch",
-};
 
-const statusColors: Record<string, string> = {
-    watching: "var(--color-success)",
-    completed: "var(--color-primary)",
-    paused: "var(--color-warning)",
-    dropped: "var(--color-error)",
-    planned: "var(--color-info)",
-};
-
-const statusOrder: AnimeStatus[] = [
-    "watching",
-    "planned",
-    "paused",
-    "completed",
-    "dropped",
-];
 
 export default function MyListPage() {
     const router = useRouter();
@@ -100,7 +84,7 @@ export default function MyListPage() {
         : list;
 
     // Group by status
-    const groupedList = statusOrder.reduce(
+    const groupedList = STATUS_ORDER.reduce(
         (acc, status) => {
             const items = filteredList.filter((item) => item.status === status);
             if (items.length > 0) acc.push({ status, items });
@@ -108,8 +92,6 @@ export default function MyListPage() {
         },
         [] as { status: AnimeStatus; items: UserAnimeListItem[] }[]
     );
-
-    const NO_SCORE_STATUSES: AnimeStatus[] = ["paused", "planned"];
 
     const handleStatusChange = async (
         malId: number,
@@ -319,10 +301,10 @@ export default function MyListPage() {
                                 <div className="flex items-center gap-2 mb-4">
                                     <span
                                         className="w-2.5 h-2.5 rounded-full"
-                                        style={{ backgroundColor: statusColors[status] }}
+                                        style={{ backgroundColor: STATUS_COLORS[status] }}
                                     />
                                     <h2 className="text-text-primary text-[1.05rem] font-semibold">
-                                        {statusLabels[status]}
+                                        {STATUS_LABELS[status]}
                                     </h2>
                                     <span className="text-gray-400 text-sm">
                                         ({items.length})
@@ -405,9 +387,9 @@ function GridCard({
                         />
                         <div
                             className="absolute top-2 left-2 px-2 py-0.5 rounded-md text-white text-xs"
-                            style={{ backgroundColor: statusColors[item.status] }}
+                            style={{ backgroundColor: STATUS_COLORS[item.status] }}
                         >
-                            {statusLabels[item.status]}
+                            {STATUS_LABELS[item.status]}
                         </div>
                         {item.score && (
                             <div
@@ -508,7 +490,7 @@ function ListCard({
                         className="text-text-primary font-medium text-[1.15rem] truncate transition-colors"
                         style={{ fontFamily: "var(--font-bebas-neue), sans-serif", letterSpacing: "0.01em" }}
                         onMouseEnter={(e) => {
-                            e.currentTarget.style.color = statusColors[item.status];
+                            e.currentTarget.style.color = STATUS_COLORS[item.status];
                         }}
                         onMouseLeave={(e) => {
                             e.currentTarget.style.color = "";
@@ -531,15 +513,15 @@ function ListCard({
                     }}
                     className="flex items-center gap-1.5 px-3 h-8 rounded-lg text-xs transition-colors"
                     style={{
-                        backgroundColor: statusColors[item.status] + "15",
-                        color: statusColors[item.status],
+                        backgroundColor: STATUS_COLORS[item.status] + "15",
+                        color: STATUS_COLORS[item.status],
                     }}
                 >
                     <span
                         className="w-1.5 h-1.5 rounded-full"
-                        style={{ backgroundColor: statusColors[item.status] }}
+                        style={{ backgroundColor: STATUS_COLORS[item.status] }}
                     />
-                    {statusLabels[item.status]}
+                    {STATUS_LABELS[item.status]}
                     <ChevronDown size={12} />
                 </button>
 
@@ -553,7 +535,7 @@ function ListCard({
                             className="absolute right-0 mt-1 w-44 bg-white rounded-xl border border-surface-alt overflow-hidden z-20"
                             style={{ boxShadow: "var(--shadow-dropdown)" }}
                         >
-                            {Object.entries(statusLabels).map(([status, label]) => (
+                            {Object.entries(STATUS_LABELS).map(([status, label]) => (
                                 <button
                                     key={status}
                                     onClick={() => {
@@ -563,13 +545,13 @@ function ListCard({
                                     className="w-full text-left px-3 py-2 text-xs hover:bg-surface-hover flex items-center gap-2 transition-colors"
                                     style={{
                                         color:
-                                            item.status === status ? statusColors[status] : "var(--color-text-primary)",
+                                            item.status === status ? STATUS_COLORS[status as AnimeStatus] : "var(--color-text-primary)",
                                         fontWeight: item.status === status ? 600 : 400,
                                     }}
                                 >
                                     <span
                                         className="w-1.5 h-1.5 rounded-full"
-                                        style={{ backgroundColor: statusColors[status] }}
+                                        style={{ backgroundColor: STATUS_COLORS[status as AnimeStatus] }}
                                     />
                                     {label}
                                     {item.status === status && (

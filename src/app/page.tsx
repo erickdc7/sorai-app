@@ -10,21 +10,12 @@ import HeroCarousel from "@/components/HeroCarousel";
 import AnimeCard from "@/components/AnimeCard";
 import AnimeCardSkeleton from "@/components/AnimeCardSkeleton";
 import { getTopAnime, getSeasonNow, getAnimeById, JikanError } from "@/lib/jikan";
+import { mapToCardData, deduplicateByMalId } from "@/lib/mappers";
 import { useAuth } from "@/context/AuthContext";
 import { AnimeCardData } from "@/types/anime";
+import type { JikanAnime, JikanNamedResource } from "@/types/jikan";
 
-function mapToCardData(anime: any): AnimeCardData {
-    return {
-        mal_id: anime.mal_id,
-        title: anime.title,
-        image_url: anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url || "",
-        type: anime.type,
-        year: anime.year ?? (anime.aired?.prop?.from?.year || null),
-        score: anime.score,
-    };
-}
-
-function mapToHeroData(anime: any, backgroundUrl: string) {
+function mapToHeroData(anime: JikanAnime, backgroundUrl: string) {
     return {
         mal_id: anime.mal_id,
         title: anime.title,
@@ -39,8 +30,8 @@ function mapToHeroData(anime: any, backgroundUrl: string) {
         genres: [
             ...(anime.genres || []),
             ...(anime.themes || []),
-        ].map((g: any) => g.name),
-        studios: (anime.studios || []).map((s: any) => s.name),
+        ].map((g: JikanNamedResource) => g.name),
+        studios: (anime.studios || []).map((s: JikanNamedResource) => s.name),
     };
 }
 
@@ -56,7 +47,7 @@ const HERO_ANIME = [
 export default function HomePage() {
     const { user, setOpenModal, profile } = useAuth();
     const showSensitive = profile?.show_sensitive_content ?? false;
-    const [heroAnimes, setHeroAnimes] = useState<any[]>([]);
+    const [heroAnimes, setHeroAnimes] = useState<ReturnType<typeof mapToHeroData>[]>([]);
     const [popular, setPopular] = useState<AnimeCardData[]>([]);
     const [season, setSeason] = useState<AnimeCardData[]>([]);
     const [loading, setLoading] = useState(true);
@@ -79,18 +70,14 @@ export default function HomePage() {
             await new Promise((r) => setTimeout(r, 400));
             const popularResult = await getTopAnime("bypopularity", 16, 1, undefined, !showSensitive);
             const popularMapped = popularResult.data.map(mapToCardData);
-            const popularUnique = popularMapped.filter(
-                (anime, index, self) => self.findIndex((a) => a.mal_id === anime.mal_id) === index
-            );
+            const popularUnique = deduplicateByMalId(popularMapped);
             setPopular(popularUnique.slice(0, 12));
 
             // Fetch seasonal anime
             await new Promise((r) => setTimeout(r, 400));
             const seasonResult = await getSeasonNow(16, 1, !showSensitive);
             const seasonMapped = seasonResult.data.map(mapToCardData);
-            const seasonUnique = seasonMapped.filter(
-                (anime, index, self) => self.findIndex((a) => a.mal_id === anime.mal_id) === index
-            );
+            const seasonUnique = deduplicateByMalId(seasonMapped);
             setSeason(seasonUnique.slice(0, 12));
         } catch (err) {
             if (err instanceof JikanError && err.status === 429) {

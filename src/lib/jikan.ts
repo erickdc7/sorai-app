@@ -1,3 +1,12 @@
+import type {
+    JikanAnime,
+    JikanCharacter,
+    JikanEpisode,
+    JikanRelation,
+    JikanRecommendation,
+    JikanPaginatedResponse,
+} from "@/types/jikan";
+
 const JIKAN_BASE = "https://api.jikan.moe/v4";
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
@@ -75,52 +84,44 @@ export async function getTopAnime(
     page: number = 1,
     type?: string,
     sfw: boolean = true
-) {
-    const data = await jikanFetch<{
-        data: any[];
-        pagination: {
-            last_visible_page: number;
-            has_next_page: boolean;
-            current_page: number;
-        };
-    }>(`/top/anime?filter=${filter}&limit=${limit}&page=${page}${type ? `&type=${type}` : ""}${sfw ? "&sfw" : ""}`);
-    return data;
+): Promise<JikanPaginatedResponse<JikanAnime>> {
+    return jikanFetch<JikanPaginatedResponse<JikanAnime>>(
+        `/top/anime?filter=${filter}&limit=${limit}&page=${page}${type ? `&type=${type}` : ""}${sfw ? "&sfw" : ""}`
+    );
 }
 
-export async function getSeasonNow(limit: number = 12, page: number = 1, sfw: boolean = true, type?: string) {
-    const data = await jikanFetch<{
-        data: any[];
-        pagination: {
-            last_visible_page: number;
-            has_next_page: boolean;
-            current_page: number;
-        };
-    }>(`/seasons/now?limit=${limit}&page=${page}${sfw ? "&sfw" : ""}${type ? `&filter=${type}` : ""}`);
-    return data;
+export async function getSeasonNow(
+    limit: number = 12,
+    page: number = 1,
+    sfw: boolean = true,
+    type?: string
+): Promise<JikanPaginatedResponse<JikanAnime>> {
+    return jikanFetch<JikanPaginatedResponse<JikanAnime>>(
+        `/seasons/now?limit=${limit}&page=${page}${sfw ? "&sfw" : ""}${type ? `&filter=${type}` : ""}`
+    );
 }
 
-export async function getSeasonUpcoming(limit: number = 12, page: number = 1, sfw: boolean = true, type?: string) {
-    const data = await jikanFetch<{
-        data: any[];
-        pagination: {
-            last_visible_page: number;
-            has_next_page: boolean;
-            current_page: number;
-        };
-    }>(`/seasons/upcoming?limit=${limit}&page=${page}${sfw ? "&sfw" : ""}${type ? `&filter=${type}` : ""}`);
-    return data;
+export async function getSeasonUpcoming(
+    limit: number = 12,
+    page: number = 1,
+    sfw: boolean = true,
+    type?: string
+): Promise<JikanPaginatedResponse<JikanAnime>> {
+    return jikanFetch<JikanPaginatedResponse<JikanAnime>>(
+        `/seasons/upcoming?limit=${limit}&page=${page}${sfw ? "&sfw" : ""}${type ? `&filter=${type}` : ""}`
+    );
 }
 
-export async function getAnimeByGenre(genreId: number, limit: number = 12, page: number = 1, sfw: boolean = true, type?: string) {
-    const data = await jikanFetch<{
-        data: any[];
-        pagination: {
-            last_visible_page: number;
-            has_next_page: boolean;
-            current_page: number;
-        };
-    }>(`/anime?genres=${genreId}&order_by=members&sort=desc&limit=${limit}&page=${page}${sfw ? "&sfw" : ""}${type ? `&type=${type}` : ""}`);
-    return data;
+export async function getAnimeByGenre(
+    genreId: number,
+    limit: number = 12,
+    page: number = 1,
+    sfw: boolean = true,
+    type?: string
+): Promise<JikanPaginatedResponse<JikanAnime>> {
+    return jikanFetch<JikanPaginatedResponse<JikanAnime>>(
+        `/anime?genres=${genreId}&order_by=members&sort=desc&limit=${limit}&page=${page}${sfw ? "&sfw" : ""}${type ? `&type=${type}` : ""}`
+    );
 }
 
 export async function getSeasonByYear(
@@ -130,16 +131,10 @@ export async function getSeasonByYear(
     page: number = 1,
     sfw: boolean = true,
     type?: string
-) {
-    const data = await jikanFetch<{
-        data: any[];
-        pagination: {
-            last_visible_page: number;
-            has_next_page: boolean;
-            current_page: number;
-        };
-    }>(`/seasons/${year}/${season}?limit=${limit}&page=${page}${sfw ? "&sfw" : ""}${type ? `&filter=${type}` : ""}`);
-    return data;
+): Promise<JikanPaginatedResponse<JikanAnime>> {
+    return jikanFetch<JikanPaginatedResponse<JikanAnime>>(
+        `/seasons/${year}/${season}?limit=${limit}&page=${page}${sfw ? "&sfw" : ""}${type ? `&filter=${type}` : ""}`
+    );
 }
 
 export async function searchAnime(
@@ -148,40 +143,34 @@ export async function searchAnime(
     limit: number = 16,
     sfw: boolean = true,
     type?: string
-) {
-    const data = await jikanFetch<{
-        data: any[];
-        pagination: {
-            last_visible_page: number;
-            has_next_page: boolean;
-            current_page: number;
-        };
-    }>(`/anime?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}${sfw ? "&sfw" : ""}${type ? `&type=${type}` : ""}`);
-    return data;
+): Promise<JikanPaginatedResponse<JikanAnime>> {
+    return jikanFetch<JikanPaginatedResponse<JikanAnime>>(
+        `/anime?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}${sfw ? "&sfw" : ""}${type ? `&type=${type}` : ""}`
+    );
 }
 
-export async function getAnimeById(id: number) {
-    const data = await jikanFetch<{ data: any }>(`/anime/${id}/full`);
+export async function getAnimeById(id: number): Promise<JikanAnime> {
+    const data = await jikanFetch<{ data: JikanAnime }>(`/anime/${id}/full`);
     return data.data;
 }
 
-export async function getAnimeCharacters(id: number) {
-    const data = await jikanFetch<{ data: any[] }>(`/anime/${id}/characters`);
+export async function getAnimeCharacters(id: number): Promise<JikanCharacter[]> {
+    const data = await jikanFetch<{ data: JikanCharacter[] }>(`/anime/${id}/characters`);
     return data.data;
 }
 
-export async function getAnimeEpisodes(id: number) {
-    const data = await jikanFetch<{ data: any[] }>(`/anime/${id}/episodes`);
+export async function getAnimeEpisodes(id: number): Promise<JikanEpisode[]> {
+    const data = await jikanFetch<{ data: JikanEpisode[] }>(`/anime/${id}/episodes`);
     return data.data;
 }
 
-export async function getAnimeRelations(id: number) {
-    const data = await jikanFetch<{ data: any[] }>(`/anime/${id}/relations`);
+export async function getAnimeRelations(id: number): Promise<JikanRelation[]> {
+    const data = await jikanFetch<{ data: JikanRelation[] }>(`/anime/${id}/relations`);
     return data.data;
 }
 
-export async function getAnimeRecommendations(id: number) {
-    const data = await jikanFetch<{ data: any[] }>(
+export async function getAnimeRecommendations(id: number): Promise<JikanRecommendation[]> {
+    const data = await jikanFetch<{ data: JikanRecommendation[] }>(
         `/anime/${id}/recommendations`
     );
     return data.data;

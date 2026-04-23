@@ -9,19 +9,10 @@ import AuthModal from "@/components/AuthModal";
 import AnimeCard from "@/components/AnimeCard";
 import AnimeCardSkeleton from "@/components/AnimeCardSkeleton";
 import { searchAnime, JikanError } from "@/lib/jikan";
+import { mapToCardData, deduplicateByMalId } from "@/lib/mappers";
 import { AnimeCardData } from "@/types/anime";
+import { TYPE_FILTERS } from "@/constants/filters";
 import { useAuth } from "@/context/AuthContext";
-
-function mapToCardData(anime: any): AnimeCardData {
-    return {
-        mal_id: anime.mal_id,
-        title: anime.title,
-        image_url: anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url || "",
-        type: anime.type,
-        year: anime.year ?? (anime.aired?.prop?.from?.year || null),
-        score: anime.score,
-    };
-}
 
 function SearchContent() {
     const searchParams = useSearchParams();
@@ -42,16 +33,6 @@ function SearchContent() {
 
     const DISPLAY_LIMIT = 12;
     const FETCH_LIMIT = 16;
-
-    const TYPE_FILTERS = [
-        { value: "all", label: "All" },
-        { value: "tv", label: "TV" },
-        { value: "movie", label: "Movie" },
-        { value: "ova", label: "OVA" },
-        { value: "ona", label: "ONA" },
-        { value: "special", label: "Special" },
-        { value: "music", label: "Music" },
-    ];
 
     const getResultsLabel = () => {
         if (totalPages <= 1) return `${results.length} result${results.length !== 1 ? "s" : ""}`;
@@ -84,9 +65,7 @@ function SearchContent() {
                 const apiType = type === "all" ? undefined : type;
                 const data = await searchAnime(query, page, FETCH_LIMIT, !showSensitive, apiType);
                 const mapped = data.data.map(mapToCardData);
-                const unique = mapped.filter(
-                    (anime, index, self) => self.findIndex((a) => a.mal_id === anime.mal_id) === index
-                );
+                const unique = deduplicateByMalId(mapped);
                 setResults(unique.slice(0, DISPLAY_LIMIT));
                 setTotalPages(data.pagination.last_visible_page);
                 setCurrentPage(data.pagination.current_page);

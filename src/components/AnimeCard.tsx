@@ -18,7 +18,7 @@ interface AnimeCardProps {
     anime: AnimeCardData;
 }
 
-export default function AnimeCard({ anime }: AnimeCardProps) {
+function AnimeCard({ anime }: AnimeCardProps) {
     return (
         <Link href={`/anime/${anime.mal_id}`} className="group block">
             <div
@@ -85,3 +85,5 @@ export default function AnimeCard({ anime }: AnimeCardProps) {
         </Link>
     );
 }
+
+export default React.memo(AnimeCard);

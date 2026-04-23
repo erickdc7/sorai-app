@@ -10,22 +10,12 @@ import AuthModal from "@/components/AuthModal";
 import AnimeCard from "@/components/AnimeCard";
 import AnimeCardSkeleton from "@/components/AnimeCardSkeleton";
 import { getTopAnime, getSeasonNow, getSeasonUpcoming, getSeasonByYear, getAnimeByGenre, JikanError } from "@/lib/jikan";
+import { mapToCardData, deduplicateByMalId } from "@/lib/mappers";
 import { AnimeCardData } from "@/types/anime";
+import { TYPE_FILTERS } from "@/constants/filters";
 import { useAuth } from "@/context/AuthContext";
 
-function mapToCardData(anime: any): AnimeCardData {
-    return {
-        mal_id: anime.mal_id,
-        title: anime.title,
-        image_url:
-            anime.images?.jpg?.large_image_url ||
-            anime.images?.jpg?.image_url ||
-            "",
-        type: anime.type,
-        year: anime.year ?? (anime.aired?.prop?.from?.year || null),
-        score: anime.score,
-    };
-}
+
 
 const SEASON_LABELS: Record<string, string> = {
     winter: "Winter",
@@ -139,15 +129,7 @@ function BrowseContent() {
     const FORMAT_TYPES = ["ona", "ova", "special", "movies"];
     const showTypeFilter = !FORMAT_TYPES.includes(type);
 
-    const TYPE_FILTERS = [
-        { value: "all", label: "All" },
-        { value: "tv", label: "TV" },
-        { value: "movie", label: "Movie" },
-        { value: "ova", label: "OVA" },
-        { value: "ona", label: "ONA" },
-        { value: "special", label: "Special" },
-        { value: "music", label: "Music" },
-    ];
+
 
     const [results, setResults] = useState<AnimeCardData[]>([]);
     const [currentPage, setCurrentPage] = useState(urlPage);
@@ -192,9 +174,7 @@ function BrowseContent() {
                     result = await getTopAnime("bypopularity", FETCH_LIMIT, page, apiType, sfw);
                 }
                 const mapped = result.data.map(mapToCardData);
-                const unique = mapped.filter(
-                    (anime, index, self) => self.findIndex((a) => a.mal_id === anime.mal_id) === index
-                );
+                const unique = deduplicateByMalId(mapped);
                 setResults(unique.slice(0, DISPLAY_LIMIT));
                 setTotalPages(result.pagination.last_visible_page);
                 setCurrentPage(result.pagination.current_page);

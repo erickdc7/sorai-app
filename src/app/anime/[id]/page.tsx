@@ -40,38 +40,14 @@ import {
     removeAnimeFromList,
 } from "@/lib/user-anime-list";
 import { AnimeStatus, UserAnimeListItem } from "@/types/anime";
-
-const statusLabels: Record<string, string> = {
-    watching: "Watching",
-    completed: "Completed",
-    paused: "On Hold",
-    dropped: "Dropped",
-    planned: "Plan to Watch",
-};
-
-const statusColors: Record<string, string> = {
-    watching: "var(--color-success)",
-    completed: "var(--color-primary)",
-    paused: "var(--color-warning)",
-    dropped: "var(--color-error)",
-    planned: "var(--color-info)",
-};
-
-const statusBgColors: Record<string, string> = {
-    watching: "var(--color-status-watching-bg)",
-    completed: "var(--color-status-completed-bg)",
-    paused: "var(--color-status-paused-bg)",
-    dropped: "var(--color-status-dropped-bg)",
-    planned: "var(--color-status-planned-bg)",
-};
-
-const statusBorderColors: Record<string, string> = {
-    watching: "var(--color-status-watching-border)",
-    completed: "var(--color-status-completed-border)",
-    paused: "var(--color-status-paused-border)",
-    dropped: "var(--color-status-dropped-border)",
-    planned: "var(--color-status-planned-border)",
-};
+import type { JikanAnime, JikanCharacter, JikanEpisode, JikanNamedResource } from "@/types/jikan";
+import {
+    STATUS_LABELS,
+    STATUS_COLORS,
+    STATUS_BG_COLORS,
+    STATUS_BORDER_COLORS,
+    NO_SCORE_STATUSES,
+} from "@/constants/anime-status";
 
 /**
  * Validates that an embed URL is from a trusted YouTube domain.
@@ -113,9 +89,9 @@ export default function AnimeDetailPage({
     const { user, setOpenModal } = useAuth();
     const [supabase] = useState(() => createClient());
 
-    const [anime, setAnime] = useState<any>(null);
-    const [characters, setCharacters] = useState<any[]>([]);
-    const [episodes, setEpisodes] = useState<any[]>([]);
+    const [anime, setAnime] = useState<JikanAnime | null>(null);
+    const [characters, setCharacters] = useState<JikanCharacter[]>([]);
+    const [episodes, setEpisodes] = useState<JikanEpisode[]>([]);
     const [relatedAnime, setRelatedAnime] = useState<CarouselAnimeItem[]>([]);
     const [similarAnime, setSimilarAnime] = useState<CarouselAnimeItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -211,7 +187,7 @@ export default function AnimeDetailPage({
                         const recData = await getAnimeRecommendations(animeId);
                         const baseItems = recData
                             .slice(0, 8)
-                            .map((rec: any) => ({
+                            .map((rec) => ({
                                 mal_id: rec.entry?.mal_id,
                                 title: rec.entry?.title || "",
                                 image_url:
@@ -223,7 +199,7 @@ export default function AnimeDetailPage({
                                 year: null as number | null,
                                 score: null as number | null,
                             }))
-                            .filter((i: any) => i.mal_id && i.image_url);
+                            .filter((i) => i.mal_id && i.image_url);
 
                         // Fetch details using cached getAnimeById
                         const enriched: CarouselAnimeItem[] = [];
@@ -302,7 +278,6 @@ export default function AnimeDetailPage({
         setActionLoading(false);
     };
 
-    const NO_SCORE_STATUSES: AnimeStatus[] = ["paused", "planned"];
 
     const handleStatusChange = async (status: AnimeStatus) => {
         if (!user) return;
@@ -579,7 +554,7 @@ export default function AnimeDetailPage({
 
                             {/* Genres */}
                             <div className="flex flex-wrap gap-2 mb-5">
-                                {genres.map((g: any) => (
+                                {genres.map((g: JikanNamedResource) => (
                                     <span
                                         key={g.mal_id}
                                         className="text-xs px-2.5 py-1 rounded-full text-white border"
@@ -634,14 +609,14 @@ export default function AnimeDetailPage({
                                                 className="flex items-center gap-2 px-4 h-10 rounded-xl text-sm text-white transition-all hover:opacity-90"
                                                 style={{
                                                     backgroundColor:
-                                                        statusBgColors[userListItem.status],
+                                                        STATUS_BG_COLORS[userListItem.status],
                                                     backdropFilter: "blur(4px)",
                                                     border: `1px solid`,
-                                                    borderColor: statusBorderColors[userListItem.status],
+                                                    borderColor: STATUS_BORDER_COLORS[userListItem.status],
                                                 }}
                                             >
                                                 <Check size={15} />
-                                                {statusLabels[userListItem.status]}
+                                                {STATUS_LABELS[userListItem.status]}
                                                 <ChevronDown
                                                     size={14}
                                                     className={`transition-transform ${showStatusDropdown ? "rotate-180" : ""
@@ -662,7 +637,7 @@ export default function AnimeDetailPage({
                                                             boxShadow: "var(--shadow-poster)",
                                                         }}
                                                     >
-                                                        {Object.entries(statusLabels).map(
+                                                        {Object.entries(STATUS_LABELS).map(
                                                             ([status, label]) => (
                                                                 <button
                                                                     key={status}
@@ -673,7 +648,7 @@ export default function AnimeDetailPage({
                                                                     style={{
                                                                         color:
                                                                             userListItem.status === status
-                                                                                ? statusColors[status]
+                                                                                ? STATUS_COLORS[status as AnimeStatus]
                                                                                 : "var(--color-text-primary)",
                                                                     }}
                                                                 >
@@ -681,7 +656,7 @@ export default function AnimeDetailPage({
                                                                         <span
                                                                             className="w-2 h-2 rounded-full shrink-0"
                                                                             style={{
-                                                                                backgroundColor: statusColors[status],
+                                                                                backgroundColor: STATUS_COLORS[status as AnimeStatus],
                                                                             }}
                                                                         />
                                                                         {label}
@@ -907,9 +882,9 @@ export default function AnimeDetailPage({
                                     Characters
                                 </h2>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    {characters.map((char: any, i: number) => {
+                                    {characters.map((char: JikanCharacter, i: number) => {
                                         const japaneseVA = char.voice_actors?.find(
-                                            (va: any) => va.language === "Japanese"
+                                            (va) => va.language === "Japanese"
                                         );
                                         return (
                                             <div
@@ -955,7 +930,7 @@ export default function AnimeDetailPage({
                                     className="bg-white rounded-2xl overflow-hidden"
                                     style={{ boxShadow: "var(--shadow-info-card)" }}
                                 >
-                                    {displayedEpisodes.map((ep: any, i: number) => (
+                                    {displayedEpisodes.map((ep: JikanEpisode, i: number) => (
                                         <div
                                             key={ep.mal_id}
                                             className="flex items-center gap-4 px-5 py-3.5 hover:bg-surface-hover transition-colors"
@@ -1093,8 +1068,8 @@ export default function AnimeDetailPage({
                         </div>
 
                         {/* Theme Songs */}
-                        {(anime.theme?.openings?.length > 0 ||
-                            anime.theme?.endings?.length > 0) && (
+                        {((anime.theme?.openings?.length ?? 0) > 0 ||
+                            (anime.theme?.endings?.length ?? 0) > 0) && (
                                 <div
                                     className="bg-white rounded-2xl p-5"
                                     style={{ boxShadow: "var(--shadow-info-card)" }}
@@ -1104,11 +1079,11 @@ export default function AnimeDetailPage({
                                         Theme Songs
                                     </h3>
 
-                                    {anime.theme?.openings?.length > 0 && (
+                                    {(anime.theme?.openings?.length ?? 0) > 0 && (
                                         <div className="mb-3">
                                             <p className="text-xs text-gray-400 mb-2">Opening</p>
                                             <div className="space-y-1.5">
-                                                {anime.theme.openings.map((song: string, i: number) => (
+                                                {anime.theme!.openings.map((song: string, i: number) => (
                                                     <div
                                                         key={i}
                                                         className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs bg-primary-light"
@@ -1125,11 +1100,11 @@ export default function AnimeDetailPage({
                                         </div>
                                     )}
 
-                                    {anime.theme?.endings?.length > 0 && (
+                                    {(anime.theme?.endings?.length ?? 0) > 0 && (
                                         <div>
                                             <p className="text-xs text-gray-400 mb-2">Ending</p>
                                             <div className="space-y-1.5">
-                                                {anime.theme.endings.map((song: string, i: number) => (
+                                                {anime.theme!.endings.map((song: string, i: number) => (
                                                     <div
                                                         key={i}
                                                         className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs bg-surface-alt"
