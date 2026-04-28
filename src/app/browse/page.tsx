@@ -300,13 +300,17 @@ function BrowseContent() {
             )}
 
             {/* Results */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-10">
-                {loading
-                    ? <AnimeGridSkeleton count={12} />
-                    : results.map((anime) => (
+            {loading ? (
+                <div className="mb-10">
+                    <AnimeGridSkeleton count={12} />
+                </div>
+            ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-10">
+                    {results.map((anime) => (
                         <AnimeCard key={anime.mal_id} anime={anime} />
                     ))}
-            </div>
+                </div>
+            )}
 
             {/* Pagination */}
             {!loading && (
