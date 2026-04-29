@@ -5,7 +5,10 @@ import { User, Session } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase";
 import { getUserProfile, ensureUserProfile, UserProfile } from "@/lib/user-profile";
 
+type AppSupabaseClient = ReturnType<typeof createClient>;
+
 interface AuthContextType {
+    supabase: AppSupabaseClient;
     user: User | null;
     session: Session | null;
     isLoading: boolean;
@@ -102,7 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                             .from("user_profiles")
                             .select("deactivated_at")
                             .eq("id", data.user.id)
-                            .maybeSingle();
+                            .maybeSingle() as { data: { deactivated_at: string | null } | null };
 
                         if (profileData?.deactivated_at) {
                             await supabase.auth.signOut();
@@ -172,6 +175,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return (
         <AuthContext.Provider
             value={{
+                supabase,
                 user,
                 session,
                 isLoading,

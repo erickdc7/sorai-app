@@ -3,9 +3,6 @@
 import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Search as SearchIcon } from "lucide-react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import AuthModal from "@/components/AuthModal";
 import AnimeCard from "@/components/AnimeCard";
 import AnimeGridSkeleton from "@/components/AnimeGridSkeleton";
 import Pagination from "@/components/Pagination";
@@ -224,8 +221,6 @@ function SearchContent() {
 export default function SearchPage() {
     return (
         <div className="min-h-screen bg-background">
-            <Navbar />
-            <AuthModal />
             <Suspense
                 fallback={
                     <main className="max-w-container mx-auto px-6 md:px-10 py-10">
@@ -235,7 +230,6 @@ export default function SearchPage() {
             >
                 <SearchContent />
             </Suspense>
-            <Footer />
         </div>
     );
 }

@@ -1,13 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { createClient } from "@/lib/supabase";
-import Navbar from "@/components/Navbar";
-import AuthModal from "@/components/AuthModal";
-import Footer from "@/components/Footer";
 import ProfilePhotoSection from "@/components/settings/ProfilePhotoSection";
 import AccountSection from "@/components/settings/AccountSection";
 import PasswordSection from "@/components/settings/PasswordSection";
@@ -16,8 +12,7 @@ import DangerZoneSection from "@/components/settings/DangerZoneSection";
 
 export default function SettingsPage() {
     const router = useRouter();
-    const { user, username, isLoading: authLoading, profile, refreshProfile } = useAuth();
-    const [supabase] = useState(() => createClient());
+    const { user, username, isLoading: authLoading, profile, refreshProfile, supabase } = useAuth();
 
     // Redirect if not logged in
     useEffect(() => {
@@ -29,8 +24,6 @@ export default function SettingsPage() {
     if (authLoading || !user) {
         return (
             <div className="min-h-screen bg-background">
-                <Navbar />
-                <AuthModal />
                 <main className="max-w-2xl mx-auto px-6 py-10">
                     <div className="h-8 skeleton w-48 mb-8" />
                     <div className="space-y-6">
@@ -48,8 +41,6 @@ export default function SettingsPage() {
 
     return (
         <div className="min-h-screen bg-background">
-            <Navbar />
-            <AuthModal />
 
             <main className="max-w-2xl mx-auto px-6 py-10">
                 {/* Header */}
@@ -98,8 +89,6 @@ export default function SettingsPage() {
                     />
                 </div>
             </main>
-
-            <Footer />
         </div>
     );
 }

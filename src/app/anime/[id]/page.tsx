@@ -1,12 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Star, Tv, AlertCircle } from "lucide-react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import AuthModal from "@/components/AuthModal";
 import AnimeHorizontalCarousel from "@/components/AnimeHorizontalCarousel";
 import AnimeHeroBanner from "@/components/anime-detail/AnimeHeroBanner";
 import AnimeSynopsis from "@/components/anime-detail/AnimeSynopsis";
@@ -15,7 +12,6 @@ import AnimeCharacters from "@/components/anime-detail/AnimeCharacters";
 import AnimeEpisodes from "@/components/anime-detail/AnimeEpisodes";
 import AnimeInfoSidebar from "@/components/anime-detail/AnimeInfoSidebar";
 import { useAuth } from "@/context/AuthContext";
-import { createClient } from "@/lib/supabase";
 import { getUserAnimeItem } from "@/lib/user-anime-list";
 import { useAnimeDetail } from "@/hooks/useAnimeDetail";
 import { useAnimeListActions } from "@/hooks/useAnimeListActions";
@@ -28,8 +24,7 @@ export default function AnimeDetailPage({
 }) {
     const { id } = params;
     const router = useRouter();
-    const { user, setOpenModal } = useAuth();
-    const [supabase] = useState(() => createClient());
+    const { user, setOpenModal, supabase } = useAuth();
 
     const animeId = Number(id);
 
@@ -102,8 +97,6 @@ export default function AnimeDetailPage({
     if (loading) {
         return (
             <div className="min-h-screen bg-background">
-                <Navbar />
-                <AuthModal />
                 {/* Hero skeleton */}
                 <div className="relative h-[480px] skeleton" />
                 <main className="max-w-container mx-auto px-6 md:px-10 py-10">
@@ -125,8 +118,6 @@ export default function AnimeDetailPage({
     if (error || !anime) {
         return (
             <div className="min-h-screen bg-background">
-                <Navbar />
-                <AuthModal />
                 <div className="max-w-container mx-auto px-10 py-20 text-center">
                     <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-red-50">
                         <AlertCircle size={28} className="text-error" />
@@ -157,8 +148,6 @@ export default function AnimeDetailPage({
 
     return (
         <div className="min-h-screen bg-background">
-            <Navbar />
-            <AuthModal />
 
             <AnimeHeroBanner
                 anime={anime}
@@ -254,8 +243,6 @@ export default function AnimeDetailPage({
                     <AnimeInfoSidebar anime={anime} />
                 </div>
             </main>
-
-            <Footer />
         </div>
     );
 }

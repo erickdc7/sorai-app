@@ -43,6 +43,47 @@ function setCache(key: string, data: unknown) {
     }
 }
 
+/* ─── Rate-Limited Fetch Queue ─── */
+
+let lastFetchTime = 0;
+const MIN_DELAY_MS = 334; // ~3 req/sec max (Jikan allows 3/sec)
+
+/**
+ * Ensures a minimum gap between Jikan API calls to prevent 429s.
+ * All requests go through the same queue so staggered fetching is automatic.
+ */
+async function rateLimitedFetch<T>(endpoint: string): Promise<T> {
+    const now = Date.now();
+    const elapsed = now - lastFetchTime;
+    if (elapsed < MIN_DELAY_MS) {
+        await new Promise((r) => setTimeout(r, MIN_DELAY_MS - elapsed));
+    }
+    lastFetchTime = Date.now();
+    return jikanFetch<T>(endpoint);
+}
+
+/**
+ * Processes an array of async tasks sequentially with rate limiting.
+ * Calls `onProgress` after each successful task, enabling progressive UI updates.
+ */
+export async function fetchSequential<TInput, TOutput>(
+    items: TInput[],
+    fetchFn: (item: TInput) => Promise<TOutput>,
+    onProgress?: (results: TOutput[]) => void
+): Promise<TOutput[]> {
+    const results: TOutput[] = [];
+    for (const item of items) {
+        try {
+            const result = await fetchFn(item);
+            results.push(result);
+            onProgress?.([...results]);
+        } catch {
+            // Skip failed items, continue with the rest
+        }
+    }
+    return results;
+}
+
 async function jikanFetch<T>(endpoint: string): Promise<T> {
     const cacheKey = `jikan:${endpoint}`;
 
@@ -177,3 +218,12 @@ export async function getAnimeRecommendations(id: number): Promise<JikanRecommen
 }
 
 export { JikanError };
+
+/**
+ * Rate-limited version of getAnimeById for sequential enrichment loops.
+ * Automatically waits between requests to avoid 429s.
+ */
+export async function getAnimeByIdThrottled(id: number): Promise<JikanAnime> {
+    const data = await rateLimitedFetch<{ data: JikanAnime }>(`/anime/${id}/full`);
+    return data.data;
+}

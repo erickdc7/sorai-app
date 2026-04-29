@@ -3,6 +3,9 @@ import { Nunito_Sans, Bebas_Neue, Marck_Script } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { Toaster } from "sonner";
+import Navbar from "@/components/Navbar";
+import AuthModal from "@/components/AuthModal";
+import Footer from "@/components/Footer";
 
 const nunitoSans = Nunito_Sans({
     subsets: ["latin"],
@@ -85,7 +88,10 @@ export default function RootLayout({
         >
             <body className="font-sans min-h-screen">
                 <AuthProvider>
+                    <Navbar />
+                    <AuthModal />
                     {children}
+                    <Footer />
                     <Toaster
                         position="bottom-right"
                         toastOptions={{

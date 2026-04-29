@@ -3,13 +3,10 @@
 import { useState, useEffect } from "react";
 import { TrendingUp, Sparkles, ArrowRight, BookOpen } from "lucide-react";
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import AuthModal from "@/components/AuthModal";
 import HeroCarousel from "@/components/HeroCarousel";
 import AnimeCard from "@/components/AnimeCard";
 import AnimeCardSkeleton from "@/components/AnimeCardSkeleton";
-import { getTopAnime, getSeasonNow, getAnimeById, JikanError } from "@/lib/jikan";
+import { getTopAnime, getSeasonNow, getAnimeByIdThrottled, fetchSequential, JikanError } from "@/lib/jikan";
 import { mapToCardData, deduplicateByMalId } from "@/lib/mappers";
 import { useAuth } from "@/context/AuthContext";
 import { AnimeCardData } from "@/types/anime";
@@ -57,24 +54,24 @@ export default function HomePage() {
         setLoading(true);
         setError(null);
         try {
-            // Fetch hero animes from hardcoded IDs
-            const heroPromises = HERO_ANIME.map(async (hero, i) => {
-                if (i > 0) await new Promise((r) => setTimeout(r, 350 * i));
-                const data = await getAnimeById(hero.mal_id);
-                return mapToHeroData(data, hero.bg);
-            });
-            const heroResults = await Promise.all(heroPromises);
+            // Fetch hero animes sequentially (rate-limited)
+            const heroResults = await fetchSequential(
+                HERO_ANIME,
+                async (hero) => {
+                    const data = await getAnimeByIdThrottled(hero.mal_id);
+                    return mapToHeroData(data, hero.bg);
+                },
+                (results) => setHeroAnimes(results)
+            );
             setHeroAnimes(heroResults);
 
-            // Fetch popular anime separately
-            await new Promise((r) => setTimeout(r, 400));
+            // Fetch popular anime (queue handles rate limiting)
             const popularResult = await getTopAnime("bypopularity", 16, 1, undefined, !showSensitive);
             const popularMapped = popularResult.data.map(mapToCardData);
             const popularUnique = deduplicateByMalId(popularMapped);
             setPopular(popularUnique.slice(0, 12));
 
             // Fetch seasonal anime
-            await new Promise((r) => setTimeout(r, 400));
             const seasonResult = await getSeasonNow(16, 1, !showSensitive);
             const seasonMapped = seasonResult.data.map(mapToCardData);
             const seasonUnique = deduplicateByMalId(seasonMapped);
@@ -97,8 +94,6 @@ export default function HomePage() {
 
     return (
         <div className="min-h-screen bg-background">
-            <Navbar />
-            <AuthModal />
 
             {/* Hero Carousel */}
             {heroAnimes.length > 0 && <HeroCarousel animes={heroAnimes} />}
@@ -237,7 +232,6 @@ export default function HomePage() {
                     </section>
                 )}
             </main>
-            <Footer />
         </div>
     );
 }

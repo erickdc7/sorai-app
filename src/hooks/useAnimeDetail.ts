@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import {
     getAnimeById,
+    getAnimeByIdThrottled,
     getAnimeCharacters,
     getAnimeEpisodes,
     getAnimeRelations,
     getAnimeRecommendations,
+    fetchSequential,
     JikanError,
 } from "@/lib/jikan";
 import type { JikanAnime, JikanCharacter, JikanEpisode } from "@/types/jikan";
@@ -27,10 +29,29 @@ const RELATION_LABELS: Record<string, string> = {
 };
 
 /**
+ * Enriches a base carousel item with image, type, year, and score
+ * by fetching the full anime data from the API (rate-limited).
+ */
+async function enrichItem(item: CarouselAnimeItem): Promise<CarouselAnimeItem> {
+    const d = await getAnimeByIdThrottled(item.mal_id);
+    return {
+        ...item,
+        image_url:
+            d.images?.webp?.large_image_url ||
+            d.images?.jpg?.large_image_url ||
+            d.images?.jpg?.image_url ||
+            "",
+        type: d.type || null,
+        year: d.year || d.aired?.prop?.from?.year || null,
+        score: d.score || null,
+    };
+}
+
+/**
  * Encapsulates all data-fetching logic for the anime detail page.
  *
- * Returns the core anime data plus related/similar anime, characters,
- * and episodes — each with independent loading states.
+ * Uses a rate-limited fetch queue to stagger API calls and prevent 429s,
+ * replacing the previous nested-setTimeout approach.
  */
 export function useAnimeDetail(animeId: number) {
     const [anime, setAnime] = useState<JikanAnime | null>(null);
@@ -46,12 +67,13 @@ export function useAnimeDetail(animeId: number) {
     useEffect(() => {
         let cancelled = false;
 
-        const fetchCore = async () => {
+        const fetchAll = async () => {
             setLoading(true);
             setLoadingRelated(true);
             setLoadingSimilar(true);
             setError(null);
 
+            // ── Phase 1: Core data (parallel) ──
             try {
                 const [animeData, charsData, epsData] = await Promise.all([
                     getAnimeById(animeId),
@@ -65,104 +87,76 @@ export function useAnimeDetail(animeId: number) {
                 setEpisodes(epsData);
             } catch (err) {
                 if (cancelled) return;
-                if (err instanceof JikanError) {
-                    setError(err.message);
-                } else {
-                    setError("Error loading anime. Please try again.");
-                }
+                setError(
+                    err instanceof JikanError
+                        ? err.message
+                        : "Error loading anime. Please try again."
+                );
+                setLoading(false);
+                setLoadingRelated(false);
+                setLoadingSimilar(false);
+                return;
             }
             if (!cancelled) setLoading(false);
 
-            // Staggered fetch for relations (avoid 429)
-            setTimeout(async () => {
+            // ── Phase 2: Related anime (sequential, rate-limited) ──
+            try {
                 if (cancelled) return;
-                try {
-                    const relData = await getAnimeRelations(animeId);
-                    const relItems: CarouselAnimeItem[] = [];
+                const relData = await getAnimeRelations(animeId);
+                const baseItems: CarouselAnimeItem[] = [];
 
-                    for (const rel of relData) {
-                        const label = RELATION_LABELS[rel.relation] || rel.relation;
-                        for (const entry of rel.entry) {
-                            if (entry.type === "anime") {
-                                relItems.push({
-                                    mal_id: entry.mal_id,
-                                    title: entry.name,
-                                    image_url: "",
-                                    relation: label,
-                                });
-                            }
-                        }
-                    }
-
-                    // Enrich with images
-                    const withImages: CarouselAnimeItem[] = [];
-                    for (const item of relItems.slice(0, 10)) {
-                        if (cancelled) return;
-                        try {
-                            await new Promise((r) => setTimeout(r, 200));
-                            const d = await getAnimeById(item.mal_id);
-                            withImages.push({
-                                ...item,
-                                image_url:
-                                    d.images?.webp?.large_image_url ||
-                                    d.images?.jpg?.large_image_url ||
-                                    d.images?.jpg?.image_url ||
-                                    "",
-                                type: d.type || null,
-                                year: d.year || d.aired?.prop?.from?.year || null,
-                                score: d.score || null,
+                for (const rel of relData) {
+                    const label = RELATION_LABELS[rel.relation] || rel.relation;
+                    for (const entry of rel.entry) {
+                        if (entry.type === "anime") {
+                            baseItems.push({
+                                mal_id: entry.mal_id,
+                                title: entry.name,
+                                image_url: "",
+                                relation: label,
                             });
-                        } catch { }
-                        if (!cancelled) setRelatedAnime([...withImages]);
-                    }
-                } catch { }
-                if (!cancelled) setLoadingRelated(false);
-
-                // Staggered fetch for recommendations
-                setTimeout(async () => {
-                    if (cancelled) return;
-                    try {
-                        const recData = await getAnimeRecommendations(animeId);
-                        const baseItems = recData
-                            .slice(0, 8)
-                            .map((rec) => ({
-                                mal_id: rec.entry?.mal_id,
-                                title: rec.entry?.title || "",
-                                image_url:
-                                    rec.entry?.images?.webp?.large_image_url ||
-                                    rec.entry?.images?.jpg?.large_image_url ||
-                                    rec.entry?.images?.jpg?.image_url ||
-                                    "",
-                                type: null as string | null,
-                                year: null as number | null,
-                                score: null as number | null,
-                            }))
-                            .filter((i) => i.mal_id && i.image_url);
-
-                        const enriched: CarouselAnimeItem[] = [];
-                        for (const item of baseItems) {
-                            if (cancelled) return;
-                            try {
-                                await new Promise((r) => setTimeout(r, 200));
-                                const d = await getAnimeById(item.mal_id);
-                                enriched.push({
-                                    ...item,
-                                    type: d.type || null,
-                                    year: d.year || d.aired?.prop?.from?.year || null,
-                                    score: d.score || null,
-                                });
-                            } catch {
-                                enriched.push(item);
-                            }
-                            if (!cancelled) setSimilarAnime([...enriched]);
                         }
-                    } catch { }
-                    if (!cancelled) setLoadingSimilar(false);
-                }, 600);
-            }, 600);
+                    }
+                }
+
+                await fetchSequential(
+                    baseItems.slice(0, 10),
+                    enrichItem,
+                    (results) => { if (!cancelled) setRelatedAnime(results); }
+                );
+            } catch { }
+            if (!cancelled) setLoadingRelated(false);
+
+            // ── Phase 3: Recommendations (sequential, rate-limited) ──
+            try {
+                if (cancelled) return;
+                const recData = await getAnimeRecommendations(animeId);
+                const baseItems = recData
+                    .slice(0, 8)
+                    .map((rec) => ({
+                        mal_id: rec.entry?.mal_id,
+                        title: rec.entry?.title || "",
+                        image_url:
+                            rec.entry?.images?.webp?.large_image_url ||
+                            rec.entry?.images?.jpg?.large_image_url ||
+                            rec.entry?.images?.jpg?.image_url ||
+                            "",
+                        type: null as string | null,
+                        year: null as number | null,
+                        score: null as number | null,
+                    }))
+                    .filter((i) => i.mal_id && i.image_url);
+
+                await fetchSequential(
+                    baseItems,
+                    enrichItem,
+                    (results) => { if (!cancelled) setSimilarAnime(results); }
+                );
+            } catch { }
+            if (!cancelled) setLoadingSimilar(false);
         };
 
-        fetchCore();
+        fetchAll();
 
         return () => {
             cancelled = true;

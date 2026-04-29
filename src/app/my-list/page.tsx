@@ -17,12 +17,8 @@ import {
     Search,
     X,
 } from "lucide-react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import AuthModal from "@/components/AuthModal";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 import { useAuth } from "@/context/AuthContext";
-import { createClient } from "@/lib/supabase";
 import {
     getUserAnimeList,
     updateAnimeStatus,
@@ -41,8 +37,7 @@ import {
 
 export default function MyListPage() {
     const router = useRouter();
-    const { user, isLoading: authLoading } = useAuth();
-    const [supabase] = useState(() => createClient());
+    const { user, isLoading: authLoading, supabase } = useAuth();
 
     const [list, setList] = useState<UserAnimeListItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -160,8 +155,6 @@ export default function MyListPage() {
     if (authLoading) {
         return (
             <div className="min-h-screen bg-background">
-                <Navbar />
-                <AuthModal />
                 <main className="max-w-container mx-auto px-6 md:px-10 py-10">
                     <div className="h-8 skeleton w-48 mb-8" />
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -182,8 +175,6 @@ export default function MyListPage() {
 
     return (
         <div className="min-h-screen bg-background">
-            <Navbar />
-            <AuthModal />
 
             <main className="max-w-container mx-auto px-6 md:px-10 py-10">
                 {/* Header */}
@@ -353,7 +344,6 @@ export default function MyListPage() {
                 animeTitle={deleteTarget?.anime_title || ""}
                 isDeleting={isDeleting}
             />
-            <Footer />
         </div>
     );
 }
