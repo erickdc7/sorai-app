@@ -47,12 +47,9 @@ function ThemeSongItem({
             {/* Icon: Play → YouTube on hover */}
             <span
                 className="shrink-0 w-5 h-5 flex items-center justify-center rounded-md transition-all duration-200"
-                style={{
-                    backgroundColor: hovered ? "#FF0000" : "transparent",
-                }}
             >
                 {hovered ? (
-                    <Youtube size={12} className="text-white" />
+                    <Youtube size={16} className="text-[#FF0000]" />
                 ) : (
                     <Play size={10} className={iconClass} fill={iconColor} />
                 )}
@@ -105,38 +102,38 @@ export default function AnimeInfoSidebar({ anime }: AnimeInfoSidebarProps) {
             {/* Theme Songs */}
             {((anime.theme?.openings?.length ?? 0) > 0 ||
                 (anime.theme?.endings?.length ?? 0) > 0) && (
-                <div
-                    className="bg-white rounded-2xl p-5"
-                    style={{ boxShadow: "var(--shadow-info-card)" }}
-                >
-                    <h3 className="text-text-primary mb-4 text-sm font-semibold flex items-center gap-2">
-                        <Music size={14} className="text-text-secondary" />
-                        Theme Songs
-                    </h3>
+                    <div
+                        className="bg-white rounded-2xl p-5"
+                        style={{ boxShadow: "var(--shadow-info-card)" }}
+                    >
+                        <h3 className="text-text-primary mb-4 text-sm font-semibold flex items-center gap-2">
+                            <Music size={14} className="text-text-secondary" />
+                            Theme Songs
+                        </h3>
 
-                    {(anime.theme?.openings?.length ?? 0) > 0 && (
-                        <div className="mb-3">
-                            <p className="text-xs text-gray-400 mb-2">Opening</p>
-                            <div className="space-y-1.5">
-                                {anime.theme!.openings.map((song: string, i: number) => (
-                                    <ThemeSongItem key={i} song={song} variant="opening" />
-                                ))}
+                        {(anime.theme?.openings?.length ?? 0) > 0 && (
+                            <div className="mb-3">
+                                <p className="text-xs text-gray-400 mb-2">Opening</p>
+                                <div className="space-y-1.5">
+                                    {anime.theme!.openings.map((song: string, i: number) => (
+                                        <ThemeSongItem key={i} song={song} variant="opening" />
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    {(anime.theme?.endings?.length ?? 0) > 0 && (
-                        <div>
-                            <p className="text-xs text-gray-400 mb-2">Ending</p>
-                            <div className="space-y-1.5">
-                                {anime.theme!.endings.map((song: string, i: number) => (
-                                    <ThemeSongItem key={i} song={song} variant="ending" />
-                                ))}
+                        {(anime.theme?.endings?.length ?? 0) > 0 && (
+                            <div>
+                                <p className="text-xs text-gray-400 mb-2">Ending</p>
+                                <div className="space-y-1.5">
+                                    {anime.theme!.endings.map((song: string, i: number) => (
+                                        <ThemeSongItem key={i} song={song} variant="ending" />
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    )}
-                </div>
-            )}
+                        )}
+                    </div>
+                )}
         </div>
     );
 }
