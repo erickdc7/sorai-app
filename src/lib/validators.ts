@@ -40,8 +40,8 @@ export function validateConfirmPassword(password: string, confirm: string): stri
 
 export function validateSearch(value: string): string | null {
     const trimmed = value.trim();
-    if (!trimmed) return "Ingresa un término de búsqueda";
-    if (trimmed.length < 3) return "Ingresa al menos 3 caracteres";
+    if (!trimmed) return "Enter a search term";
+    if (trimmed.length < 3) return "Enter at least 3 characters";
     return null;
     // Max 100 is enforced by maxLength on the input
 }
