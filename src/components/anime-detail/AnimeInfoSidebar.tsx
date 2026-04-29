@@ -1,8 +1,73 @@
-import { Music, Play } from "lucide-react";
+"use client";
+
+import { useState } from "react";
+import { Music, Play, Youtube } from "lucide-react";
 import type { JikanAnime } from "@/types/jikan";
 
 interface AnimeInfoSidebarProps {
     anime: JikanAnime;
+}
+
+function cleanSongTitle(raw: string): string {
+    return raw
+        .replace(/^\d+:\s*/, "")
+        .replace(/\([^)]*\)/g, "")
+        .trim();
+}
+
+function buildYouTubeSearchUrl(song: string): string {
+    const cleaned = cleanSongTitle(song);
+    return `https://www.youtube.com/results?search_query=${encodeURIComponent(cleaned)}`;
+}
+
+function ThemeSongItem({
+    song,
+    variant,
+}: {
+    song: string;
+    variant: "opening" | "ending";
+}) {
+    const [hovered, setHovered] = useState(false);
+    const url = buildYouTubeSearchUrl(song);
+
+    const isOpening = variant === "opening";
+    const bgClass = isOpening ? "bg-primary-light" : "bg-surface-alt";
+    const iconColor = isOpening ? "var(--color-primary)" : "var(--color-text-secondary)";
+    const iconClass = isOpening ? "text-primary" : "text-text-secondary";
+
+    return (
+        <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`group relative flex items-center gap-2 px-3 py-2 rounded-xl text-xs transition-colors cursor-pointer ${bgClass} hover:bg-[#FF0000]/10`}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+        >
+            {/* Icon: Play → YouTube on hover */}
+            <span
+                className="shrink-0 w-5 h-5 flex items-center justify-center rounded-md transition-all duration-200"
+                style={{
+                    backgroundColor: hovered ? "#FF0000" : "transparent",
+                }}
+            >
+                {hovered ? (
+                    <Youtube size={12} className="text-white" />
+                ) : (
+                    <Play size={10} className={iconClass} fill={iconColor} />
+                )}
+            </span>
+
+            <span className="text-gray-700 group-hover:text-gray-900 transition-colors">
+                {song}
+            </span>
+
+            {/* Tooltip */}
+            <span className="absolute left-1/2 -translate-x-1/2 -top-8 px-2 py-1 rounded-lg bg-gray-900 text-white text-[10px] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-lg z-10">
+                Search on YouTube
+            </span>
+        </a>
+    );
 }
 
 export default function AnimeInfoSidebar({ anime }: AnimeInfoSidebarProps) {
@@ -54,13 +119,7 @@ export default function AnimeInfoSidebar({ anime }: AnimeInfoSidebarProps) {
                             <p className="text-xs text-gray-400 mb-2">Opening</p>
                             <div className="space-y-1.5">
                                 {anime.theme!.openings.map((song: string, i: number) => (
-                                    <div
-                                        key={i}
-                                        className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs bg-primary-light"
-                                    >
-                                        <Play size={10} className="text-primary shrink-0" fill="var(--color-primary)" />
-                                        <span className="text-gray-700">{song}</span>
-                                    </div>
+                                    <ThemeSongItem key={i} song={song} variant="opening" />
                                 ))}
                             </div>
                         </div>
@@ -71,13 +130,7 @@ export default function AnimeInfoSidebar({ anime }: AnimeInfoSidebarProps) {
                             <p className="text-xs text-gray-400 mb-2">Ending</p>
                             <div className="space-y-1.5">
                                 {anime.theme!.endings.map((song: string, i: number) => (
-                                    <div
-                                        key={i}
-                                        className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs bg-surface-alt"
-                                    >
-                                        <Play size={10} className="text-text-secondary shrink-0" fill="var(--color-text-secondary)" />
-                                        <span className="text-gray-700">{song}</span>
-                                    </div>
+                                    <ThemeSongItem key={i} song={song} variant="ending" />
                                 ))}
                             </div>
                         </div>
