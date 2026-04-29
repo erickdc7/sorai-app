@@ -43,6 +43,7 @@ function NavbarContent() {
         }
         setSearchError(null);
         router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+        setSearchQuery("");
         setShowMobileMenu(false);
     };
 
