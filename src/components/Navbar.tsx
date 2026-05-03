@@ -38,7 +38,7 @@ function NavbarContent() {
         e.preventDefault();
         const error = validateSearch(searchQuery);
         if (error) {
-            toast.warning(error);
+            toast.warning("Search too short", { description: error });
             return;
         }
         router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
