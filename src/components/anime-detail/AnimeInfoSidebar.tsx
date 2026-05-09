@@ -31,9 +31,9 @@ function ThemeSongItem({
     const url = buildYouTubeSearchUrl(song);
 
     const isOpening = variant === "opening";
-    const bgClass = isOpening ? "bg-primary-light" : "bg-surface-alt";
-    const iconColor = isOpening ? "var(--color-primary)" : "var(--color-text-secondary)";
-    const iconClass = isOpening ? "text-primary" : "text-text-secondary";
+    const bgClass = "bg-surface-alt";
+    const iconColor = "var(--color-text-secondary)";
+    const iconClass = "text-text-secondary";
 
     return (
         <a
