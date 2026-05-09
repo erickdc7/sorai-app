@@ -11,13 +11,13 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
 
 @layer base {
   :root {
-    /* ── Primary ── */
-    --color-primary: #6B3FA0;
-    --color-primary-hover: #5a3388;
-    --color-primary-light: #F3EBF9;
-    --color-primary-gradient: #9B6FD0;
-    --color-primary-dark: #4A2470;
-    --color-primary-medium: #8B5FC0;
+    /* Primary */
+    --color-primary: #C0392B;
+    --color-primary-hover: #A93226;
+    --color-primary-light: #FDEDEC;
+    --color-primary-gradient: #E74C3C;
+    --color-primary-dark: #922B21;
+    --color-primary-medium: #D44638;
 
     /* ── Background & Surface ── */
     --color-background: #F9F9F9;
@@ -85,9 +85,9 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
     --color-season-fall: #F97316;
     --color-season-fall-bg: #FFF7ED;
 
-    /* ── Footer ── */
-    --color-footer-bg: #1A1625;
-    --color-footer-heading: #9B6FD0;
+   /* Footer */
+    --color-footer-bg: #1A1A2E;
+    --color-footer-heading: #E74C3C;
 
     /* ── Scrollbar ── */
     --color-scrollbar-thumb: #d1d5db;
