@@ -51,6 +51,9 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
     --color-status-planned-bg: rgba(59, 130, 246, 0.8);
     --color-status-planned-border: rgba(59, 130, 246, 0.5);
 
+    /* ── Status accent color ── */
+    --color-completed: #6B3FA0;
+
     /* ── Anime type badges ── */
     --color-type-tv: #6B3FA0;
     --color-type-movie: #1565C0;

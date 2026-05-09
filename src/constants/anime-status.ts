@@ -12,7 +12,7 @@ export const STATUS_LABELS: Record<AnimeStatus, string> = {
 /** Theme colors for each status (CSS custom properties). */
 export const STATUS_COLORS: Record<AnimeStatus, string> = {
     watching: "var(--color-success)",
-    completed: "var(--color-primary)",
+    completed: "var(--color-completed)",
     paused: "var(--color-warning)",
     dropped: "var(--color-error)",
     planned: "var(--color-info)",
