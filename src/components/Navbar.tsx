@@ -56,7 +56,7 @@ function NavbarContent() {
             <nav
                 className="sticky top-0 z-50 transition-all duration-300"
                 style={{
-                    backgroundColor: scrolled ? "var(--color-glass-white-97)" : "white",
+                    backgroundColor: scrolled ? "var(--color-glass-white-97)" : "var(--color-surface)",
                     boxShadow: scrolled
                         ? "var(--shadow-navbar-scrolled)"
                         : "var(--shadow-navbar)",
@@ -185,7 +185,7 @@ function NavbarContent() {
                                             className="fixed inset-0 z-10"
                                             onClick={() => setShowUserMenu(false)}
                                         />
-                                        <div className="absolute right-0 mt-2 w-52 bg-white rounded-2xl shadow-xl border border-surface-alt overflow-hidden z-20">
+                                        <div className="absolute right-0 mt-2 w-52 bg-surface rounded-2xl shadow-xl border border-surface-alt overflow-hidden z-20">
                                             <div className="px-4 py-3 border-b border-surface-alt">
                                                 <p className="text-xs text-gray-400">Signed in as</p>
                                                 <p className="text-sm text-text-primary">@{username}</p>

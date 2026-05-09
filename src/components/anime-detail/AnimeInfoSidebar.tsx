@@ -75,7 +75,7 @@ export default function AnimeInfoSidebar({ anime }: AnimeInfoSidebarProps) {
         <div className="space-y-6">
             {/* Info card */}
             <div
-                className="bg-white rounded-2xl p-5"
+                className="bg-surface rounded-2xl p-5"
                 style={{ boxShadow: "var(--shadow-info-card)" }}
             >
                 <h3 className="text-text-primary mb-4 text-sm font-semibold">
@@ -103,7 +103,7 @@ export default function AnimeInfoSidebar({ anime }: AnimeInfoSidebarProps) {
             {((anime.theme?.openings?.length ?? 0) > 0 ||
                 (anime.theme?.endings?.length ?? 0) > 0) && (
                     <div
-                        className="bg-white rounded-2xl p-5"
+                        className="bg-surface rounded-2xl p-5"
                         style={{ boxShadow: "var(--shadow-info-card)" }}
                     >
                         <h3 className="text-text-primary mb-4 text-sm font-semibold flex items-center gap-2">

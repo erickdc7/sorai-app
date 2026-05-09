@@ -189,7 +189,7 @@ export default function AnimeDetailPage({
                                 <div className="flex gap-4 overflow-hidden">
                                     {Array.from({ length: 5 }).map((_, i) => (
                                         <div key={i} className="shrink-0 animate-pulse" style={{ width: "160px" }}>
-                                            <div className="rounded-2xl overflow-hidden bg-white" style={{ boxShadow: "var(--shadow-card)" }}>
+                                            <div className="rounded-2xl overflow-hidden bg-surface" style={{ boxShadow: "var(--shadow-card)" }}>
                                                 <div className="aspect-[2/3] bg-gray-200" />
                                                 <div className="p-3 space-y-2">
                                                     <div className="h-4 bg-gray-200 rounded w-3/4" />
@@ -219,7 +219,7 @@ export default function AnimeDetailPage({
                                 <div className="flex gap-4 overflow-hidden">
                                     {Array.from({ length: 5 }).map((_, i) => (
                                         <div key={i} className="shrink-0 animate-pulse" style={{ width: "160px" }}>
-                                            <div className="rounded-2xl overflow-hidden bg-white" style={{ boxShadow: "var(--shadow-card)" }}>
+                                            <div className="rounded-2xl overflow-hidden bg-surface" style={{ boxShadow: "var(--shadow-card)" }}>
                                                 <div className="aspect-[2/3] bg-gray-200" />
                                                 <div className="p-3 space-y-2">
                                                     <div className="h-4 bg-gray-200 rounded w-3/4" />

@@ -188,7 +188,7 @@ export default function MyListPage() {
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-1 p-1 rounded-xl bg-white border border-border">
+                    <div className="flex items-center gap-1 p-1 rounded-xl bg-surface border border-border">
                         <button
                             onClick={() => setViewMode("grid")}
                             className="flex items-center gap-1.5 px-3 h-8 rounded-lg text-sm transition-colors"
@@ -227,7 +227,7 @@ export default function MyListPage() {
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Search in my list..."
                             maxLength={100}
-                            className="w-full pl-10 pr-4 h-10 rounded-xl border border-border bg-white text-sm text-text-primary placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                            className="w-full pl-10 pr-4 h-10 rounded-xl border border-border bg-surface text-sm text-text-primary placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                         />
                         {searchQuery && (
                             <button

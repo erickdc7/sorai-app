@@ -30,7 +30,7 @@ export default function AnimeTrailer({ embedUrl, youtubeId }: AnimeTrailerProps)
             </h2>
             {embedUrl && isValidYouTubeEmbedUrl(embedUrl) ? (
                 <div
-                    className="rounded-2xl overflow-hidden bg-white"
+                    className="rounded-2xl overflow-hidden bg-surface"
                     style={{ boxShadow: "var(--shadow-info-card)" }}
                 >
                     <div className="relative aspect-video">
@@ -45,7 +45,7 @@ export default function AnimeTrailer({ embedUrl, youtubeId }: AnimeTrailerProps)
                 </div>
             ) : youtubeId ? (
                 <div
-                    className="rounded-2xl overflow-hidden bg-white"
+                    className="rounded-2xl overflow-hidden bg-surface"
                     style={{ boxShadow: "var(--shadow-info-card)" }}
                 >
                     <div className="relative aspect-video">
@@ -60,7 +60,7 @@ export default function AnimeTrailer({ embedUrl, youtubeId }: AnimeTrailerProps)
                 </div>
             ) : (
                 <div
-                    className="rounded-2xl overflow-hidden bg-white flex items-center justify-center"
+                    className="rounded-2xl overflow-hidden bg-surface flex items-center justify-center"
                     style={{ boxShadow: "var(--shadow-info-card)", aspectRatio: "16/9" }}
                 >
                     <div className="text-center">

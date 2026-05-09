@@ -22,7 +22,7 @@ function AnimeCard({ anime }: AnimeCardProps) {
     return (
         <Link href={`/anime/${anime.mal_id}`} className="group block">
             <div
-                className="rounded-2xl overflow-hidden bg-white transition-all duration-300  "
+                className="rounded-2xl overflow-hidden bg-surface transition-all duration-300  "
                 style={{ boxShadow: "var(--shadow-card)" }}
                 onMouseEnter={(e) =>
                 (e.currentTarget.style.boxShadow =

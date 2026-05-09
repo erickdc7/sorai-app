@@ -28,7 +28,7 @@ export default function ListCard({
 
     return (
         <div
-            className="flex items-center gap-4 bg-white rounded-2xl p-3 pr-5 hover:shadow-md transition-all"
+            className="flex items-center gap-4 bg-surface rounded-2xl p-3 pr-5 hover:shadow-md transition-all"
             style={{ boxShadow: "var(--shadow-soft)" }}
         >
             <Link href={`/anime/${item.mal_id}`} className="shrink-0">
@@ -88,7 +88,7 @@ export default function ListCard({
                             onClick={() => setShowStatus(false)}
                         />
                         <div
-                            className="absolute right-0 mt-1 w-44 bg-white rounded-xl border border-surface-alt overflow-hidden z-20"
+                            className="absolute right-0 mt-1 w-44 bg-surface rounded-xl border border-surface-alt overflow-hidden z-20"
                             style={{ boxShadow: "var(--shadow-dropdown)" }}
                         >
                             {Object.entries(STATUS_LABELS).map(([status, label]) => (
@@ -145,7 +145,7 @@ export default function ListCard({
                                 onClick={() => setOpenScoreDropdown(null)}
                             />
                             <div
-                                className="absolute right-0 mt-1 w-36 bg-white rounded-xl border border-surface-alt overflow-hidden z-20 max-h-[300px] overflow-y-auto"
+                                className="absolute right-0 mt-1 w-36 bg-surface rounded-xl border border-surface-alt overflow-hidden z-20 max-h-[300px] overflow-y-auto"
                                 style={{ boxShadow: "var(--shadow-dropdown)" }}
                             >
                                 {[...Array(10)].map((_, i) => {

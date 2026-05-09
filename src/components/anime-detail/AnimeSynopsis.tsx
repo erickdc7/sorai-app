@@ -12,7 +12,7 @@ export default function AnimeSynopsis({ synopsis }: AnimeSynopsisProps) {
                 Synopsis
             </h2>
             <div
-                className="p-5 rounded-2xl bg-white"
+                className="p-5 rounded-2xl bg-surface"
                 style={{ boxShadow: "var(--shadow-info-card)" }}
             >
                 <p className="text-gray-600 leading-relaxed text-sm">

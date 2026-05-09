@@ -23,7 +23,7 @@ export default function AnimeCharacters({ characters }: AnimeCharactersProps) {
                     return (
                         <div
                             key={i}
-                            className="flex items-center gap-3 p-3 bg-white rounded-2xl"
+                            className="flex items-center gap-3 p-3 bg-surface rounded-2xl"
                             style={{ boxShadow: "var(--shadow-info-card)" }}
                         >
                             <img

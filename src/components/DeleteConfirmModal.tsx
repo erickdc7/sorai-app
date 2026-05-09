@@ -28,7 +28,7 @@ export default function DeleteConfirmModal({
             }}
             onClick={(e) => e.target === e.currentTarget && onClose()}
         >
-            <div className="bg-white rounded-2xl max-w-md w-full p-8 shadow-2xl animate-modal-in">
+            <div className="bg-surface rounded-2xl max-w-md w-full p-8 shadow-2xl animate-modal-in">
                 <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
                     <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
                         <path

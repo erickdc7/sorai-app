@@ -35,7 +35,7 @@ export default function AuthModal() {
             }}
             onClick={(e) => e.target === e.currentTarget && handleClose()}
         >
-            <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-modal-in">
+            <div className="bg-surface rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-modal-in">
                 <div className="p-8">
                     {/* Header */}
                     <div className="flex items-start justify-between mb-6">

@@ -23,7 +23,7 @@ export default function AnimeEpisodes({ episodes }: AnimeEpisodesProps) {
                 Episodes
             </h2>
             <div
-                className="bg-white rounded-2xl overflow-hidden"
+                className="bg-surface rounded-2xl overflow-hidden"
                 style={{ boxShadow: "var(--shadow-info-card)" }}
             >
                 {displayed.map((ep: JikanEpisode, i: number) => (

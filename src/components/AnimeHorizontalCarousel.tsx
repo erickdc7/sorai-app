@@ -116,7 +116,7 @@ export default function AnimeHorizontalCarousel({ title, icon, items }: Props) {
                         style={{ width: "160px" }}
                     >
                         <div
-                            className="rounded-2xl overflow-hidden bg-white transition-all duration-300  "
+                            className="rounded-2xl overflow-hidden bg-surface transition-all duration-300  "
                             style={{ boxShadow: "var(--shadow-card)" }}
                             onMouseEnter={(e) =>
                             (e.currentTarget.style.boxShadow =

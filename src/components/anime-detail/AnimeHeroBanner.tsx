@@ -302,7 +302,7 @@ export default function AnimeHeroBanner({
                                                         onClick={() => setShowStatusDropdown(false)}
                                                     />
                                                     <div
-                                                        className="absolute left-0 mt-2 w-52 bg-white rounded-2xl border border-surface-alt overflow-hidden z-[101]"
+                                                        className="absolute left-0 mt-2 w-52 bg-surface rounded-2xl border border-surface-alt overflow-hidden z-[101]"
                                                         style={{ top: "100%", boxShadow: "var(--shadow-poster)" }}
                                                     >
                                                         {Object.entries(STATUS_LABELS).map(([status, label]) => (
@@ -384,7 +384,7 @@ export default function AnimeHeroBanner({
                                                             onClick={() => setShowScoreDropdown(false)}
                                                         />
                                                         <div
-                                                            className="absolute left-0 mt-2 w-44 bg-white rounded-2xl border border-surface-alt overflow-hidden z-[101] max-h-[360px] overflow-y-auto"
+                                                            className="absolute left-0 mt-2 w-44 bg-surface rounded-2xl border border-surface-alt overflow-hidden z-[101] max-h-[360px] overflow-y-auto"
                                                             style={{ top: "100%", boxShadow: "var(--shadow-poster)" }}
                                                         >
                                                             {!userListItem.score && (
