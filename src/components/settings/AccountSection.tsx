@@ -83,7 +83,7 @@ export default function AccountSection({ supabase, user, username }: AccountSect
 
     return (
         <section className="bg-surface rounded-2xl border border-border p-6">
-            <h2 className="text-sm font-semibold text-text-primary mb-5 flex items-center gap-2">
+            <h2 className="text-md font-semibold text-text-primary mb-5 flex items-center gap-2">
                 <UserIcon size={16} className="text-primary" />
                 Account
             </h2>

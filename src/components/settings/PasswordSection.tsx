@@ -60,7 +60,7 @@ export default function PasswordSection({ supabase }: PasswordSectionProps) {
 
     return (
         <section className="bg-surface rounded-2xl border border-border p-6">
-            <h2 className="text-sm font-semibold text-text-primary mb-5 flex items-center gap-2">
+            <h2 className="text-md font-semibold text-text-primary mb-5 flex items-center gap-2">
                 <Lock size={16} className="text-primary" />
                 Password
             </h2>

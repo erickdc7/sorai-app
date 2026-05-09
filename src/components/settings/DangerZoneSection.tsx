@@ -65,7 +65,7 @@ export default function DangerZoneSection({ supabase, userId }: DangerZoneSectio
         <>
             {/* Export Data */}
             <section className="bg-surface rounded-2xl border border-border p-6">
-                <h2 className="text-sm font-semibold text-text-primary mb-4 flex items-center gap-2">
+                <h2 className="text-md font-semibold text-text-primary mb-4 flex items-center gap-2">
                     <Download size={16} className="text-primary" />
                     Your Data
                 </h2>
@@ -87,7 +87,7 @@ export default function DangerZoneSection({ supabase, userId }: DangerZoneSectio
                 className="rounded-2xl border-2 p-6"
                 style={{ borderColor: "var(--color-error)" }}
             >
-                <h2 className="text-sm font-semibold mb-4 flex items-center gap-2" style={{ color: "var(--color-error)" }}>
+                <h2 className="text-md font-semibold mb-4 flex items-center gap-2" style={{ color: "var(--color-error)" }}>
                     <AlertTriangle size={16} />
                     Danger Zone
                 </h2>
