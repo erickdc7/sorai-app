@@ -11,11 +11,11 @@ export const STATUS_LABELS: Record<AnimeStatus, string> = {
 
 /** Theme colors for each status (CSS custom properties). */
 export const STATUS_COLORS: Record<AnimeStatus, string> = {
-    watching: "var(--color-success)",
-    completed: "var(--color-completed)",
-    paused: "var(--color-warning)",
-    dropped: "var(--color-error)",
-    planned: "var(--color-info)",
+    watching: "var(--color-status-watching)",
+    completed: "var(--color-status-completed)",
+    paused: "var(--color-status-paused)",
+    dropped: "var(--color-status-dropped)",
+    planned: "var(--color-status-planned)",
 };
 
 /** Background colors for status buttons overlaid on hero images. */
