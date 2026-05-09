@@ -7,6 +7,7 @@ import { Search, List, LogOut, ChevronDown, Menu, X, Settings } from "lucide-rea
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { validateSearch } from "@/lib/validators";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Navbar() {
     return (
@@ -130,8 +131,11 @@ function NavbarContent() {
 
                     </form>
 
-                    {/* Right: Auth */}
+                    {/* Right: Theme toggle + Auth */}
                     <div className="flex items-center gap-2 flex-1 justify-end">
+                        <div className="hidden md:block">
+                            <ThemeToggle />
+                        </div>
                         {!isLoading && !isLoggedIn ? (
                             <div className="hidden md:flex items-center gap-2">
                                 <button
@@ -234,7 +238,7 @@ function NavbarContent() {
 
                 {/* Mobile menu */}
                 {showMobileMenu && (
-                    <div className="md:hidden border-t border-surface-alt px-6 py-4 space-y-3 bg-white">
+                    <div className="md:hidden border-t border-surface-alt px-6 py-4 space-y-3 bg-surface">
                         <form onSubmit={handleSearch}>
                             <div className="relative">
                                 <Search
@@ -252,6 +256,7 @@ function NavbarContent() {
                             </div>
 
                         </form>
+                        <ThemeToggle />
                         <Link
                             href="/browse?type=popular"
                             onClick={() => setShowMobileMenu(false)}

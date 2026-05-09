@@ -135,6 +135,53 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
     --shadow-delete-hover: 0 2px 8px rgba(220, 38, 38, 0.3);
   }
 
+  .dark {
+    /* Primary (brighter for contrast) */
+    --color-primary: #E74C3C;
+    --color-primary-hover: #C0392B;
+    --color-primary-light: rgba(231, 76, 60, 0.12);
+    --color-primary-gradient: #FF6B5A;
+    --color-primary-dark: #C0392B;
+    --color-primary-medium: #E74C3C;
+
+    /* ── Background & Surface ── */
+    --color-background: #0F0F0F;
+    --color-surface: #1A1A1A;
+    --color-surface-alt: #242424;
+    --color-input-bg: #1F1F1F;
+    --color-surface-hover: #242424;
+
+    /* ── Text ── */
+    --color-text-primary: #F9F9F9;
+    --color-text-secondary: #9CA3AF;
+    --color-text-disabled: #4B5563;
+
+    /* ── Border ── */
+    --color-border: #2D2D2D;
+
+    /* Footer */
+    --color-footer-bg: #0A0A0A;
+
+    /* ── Scrollbar ── */
+    --color-scrollbar-thumb: #3D3D3D;
+    --color-scrollbar-thumb-hover: #525252;
+
+    /* ── Overlay / alpha ── */
+    --color-glass-white-97: rgba(26, 26, 26, 0.97);
+    --color-hero-gradient-bottom: linear-gradient(to top, #0F0F0F 0%, rgba(15,15,15,0) 40%);
+
+    /* ── Shadows (subtle in dark) ── */
+    --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.4);
+    --shadow-navbar-scrolled: 0 1px 20px rgba(0, 0, 0, 0.4);
+    --shadow-navbar: 0 1px 0 rgba(255, 255, 255, 0.06);
+    --shadow-soft: 0 1px 6px rgba(0, 0, 0, 0.3);
+    --shadow-info-card: 0 1px 8px rgba(0, 0, 0, 0.3);
+    --shadow-dropdown: 0 8px 24px rgba(0, 0, 0, 0.5);
+    --shadow-poster: 0 16px 40px rgba(0, 0, 0, 0.5);
+    --shadow-carousel-hover: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
   html {
     font-family: var(--font-nunito-sans), system-ui, -apple-system, sans-serif;
   }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Nunito_Sans, Bebas_Neue, Marck_Script } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
+import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
 import Navbar from "@/components/Navbar";
 import AuthModal from "@/components/AuthModal";
@@ -85,24 +86,27 @@ export default function RootLayout({
         <html
             lang="en"
             className={`${nunitoSans.variable} ${bebasNeue.variable} ${marckScript.variable}`}
+            suppressHydrationWarning
         >
             <body className="font-sans min-h-screen">
-                <AuthProvider>
-                    <Navbar />
-                    <AuthModal />
-                    {children}
-                    <Footer />
-                    <Toaster
-                        position="bottom-right"
-                        toastOptions={{
-                            style: {
-                                borderRadius: "12px",
-                                fontSize: "14px",
-                            },
-                        }}
-                        richColors
-                    />
-                </AuthProvider>
+                <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+                    <AuthProvider>
+                        <Navbar />
+                        <AuthModal />
+                        {children}
+                        <Footer />
+                        <Toaster
+                            position="bottom-right"
+                            toastOptions={{
+                                style: {
+                                    borderRadius: "12px",
+                                    fontSize: "14px",
+                                },
+                            }}
+                            richColors
+                        />
+                    </AuthProvider>
+                </ThemeProvider>
             </body>
         </html>
     );

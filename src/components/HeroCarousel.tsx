@@ -56,6 +56,11 @@ export default function HeroCarousel({ animes }: HeroCarouselProps) {
         return () => clearInterval(timer);
     }, [next, animes.length]);
 
+    // Reset index when animes array changes
+    useEffect(() => {
+        setCurrent(0);
+    }, [animes.length]);
+
     // Drag / swipe handlers
     const handleDragStart = (clientX: number) => {
         dragRef.current = { startX: clientX, isDragging: true, wasDragged: false };
@@ -87,7 +92,9 @@ export default function HeroCarousel({ animes }: HeroCarouselProps) {
 
     if (animes.length === 0) return null;
 
-    const anime = animes[current];
+    const safeIndex = current < animes.length ? current : 0;
+    const anime = animes[safeIndex];
+    if (!anime) return null;
     const isAiring = anime.status === "Currently Airing";
 
     return (
