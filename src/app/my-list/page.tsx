@@ -296,7 +296,7 @@ export default function MyListPage() {
                                         className="w-2.5 h-2.5 rounded-full"
                                         style={{ backgroundColor: STATUS_COLORS[status] }}
                                     />
-                                    <h2 className="text-text-primary text-[1.05rem] font-semibold">
+                                    <h2 className="text-text-primary text-lg font-semibold">
                                         {STATUS_LABELS[status]}
                                     </h2>
                                     <span className="text-gray-400 text-sm">

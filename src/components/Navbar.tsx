@@ -193,7 +193,7 @@ function NavbarContent() {
                                             <Link
                                                 href="/my-list"
                                                 onClick={() => setShowUserMenu(false)}
-                                                className="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 hover:bg-surface-hover transition-colors"
+                                                className="flex items-center gap-2.5 px-4 py-3 text-sm text-text-secondary hover:bg-surface-hover transition-colors"
                                             >
                                                 <List size={16} className="text-text-secondary" />
                                                 My List
@@ -201,7 +201,7 @@ function NavbarContent() {
                                             <Link
                                                 href="/settings"
                                                 onClick={() => setShowUserMenu(false)}
-                                                className="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 hover:bg-surface-hover transition-colors"
+                                                className="flex items-center gap-2.5 px-4 py-3 text-sm text-text-secondary hover:bg-surface-hover transition-colors"
                                             >
                                                 <Settings size={16} className="text-text-secondary" />
                                                 Settings

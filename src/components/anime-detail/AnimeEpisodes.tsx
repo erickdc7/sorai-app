@@ -40,7 +40,7 @@ export default function AnimeEpisodes({ episodes }: AnimeEpisodesProps) {
                         <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0 bg-primary-light text-primary font-semibold">
                             {ep.mal_id}
                         </div>
-                        <p className="flex-1 text-gray-700 text-sm">
+                        <p className="flex-1 text-text-secondary text-sm">
                             {ep.title || `Episode ${ep.mal_id}`}
                         </p>
                         {ep.aired && (

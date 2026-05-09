@@ -55,7 +55,7 @@ function ThemeSongItem({
                 )}
             </span>
 
-            <span className="text-gray-700 group-hover:text-gray-900 transition-colors">
+            <span className="text-text-secondary group-hover:text-text-primary transition-colors">
                 {song}
             </span>
 
@@ -93,7 +93,7 @@ export default function AnimeInfoSidebar({ anime }: AnimeInfoSidebarProps) {
                     ].map(({ label, value }) => (
                         <div key={label} className="flex justify-between items-start gap-4">
                             <dt className="text-gray-400 text-xs shrink-0">{label}</dt>
-                            <dd className="text-gray-700 text-xs text-right font-medium">{value}</dd>
+                            <dd className="text-text-secondary text-xs text-right font-medium">{value}</dd>
                         </div>
                     ))}
                 </dl>
