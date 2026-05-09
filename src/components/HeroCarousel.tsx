@@ -132,7 +132,7 @@ export default function HeroCarousel({ animes }: HeroCarouselProps) {
                     className="absolute inset-0"
                     style={{
                         background:
-                            "linear-gradient(to top, rgba(249,249,249,1) 0%, rgba(249,249,249,0) 35%)",
+                            "var(--color-hero-gradient-bottom)",
                     }}
                 />
             </div>
