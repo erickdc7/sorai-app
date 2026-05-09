@@ -140,7 +140,7 @@ function NavbarContent() {
                             <div className="hidden md:flex items-center gap-2">
                                 <button
                                     onClick={() => setOpenModal("login")}
-                                    className="px-4 h-9 text-sm text-gray-700 hover:text-primary hover:bg-primary-light rounded-xl transition-colors"
+                                    className="px-4 h-9 text-sm text-text-secondary hover:text-primary hover:bg-primary-light rounded-xl transition-colors"
                                 >
                                     Sign in
                                 </button>
