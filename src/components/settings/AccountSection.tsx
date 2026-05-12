@@ -99,7 +99,7 @@ export default function AccountSection({ supabase, user, username }: AccountSect
                             value={newUsername}
                             onChange={(e) => handleUsernameChange(e.target.value)}
                             maxLength={20}
-                            className="flex-1 h-10 px-4 bg-surface-hover rounded-xl border border-border text-sm text-text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 transition-colors"
+                            className="flex-1 h-10 px-4 bg-surface-hover rounded-xl border border-border text-sm text-text-primary focus:border-primary focus:outline-none transition-colors"
                         />
                         <button
                             onClick={handleSaveUsername}
@@ -130,7 +130,7 @@ export default function AccountSection({ supabase, user, username }: AccountSect
                             value={newEmail}
                             onChange={(e) => handleEmailChange(e.target.value)}
                             maxLength={254}
-                            className="flex-1 h-10 px-4 bg-surface-hover rounded-xl border border-border text-sm text-text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 transition-colors"
+                            className="flex-1 h-10 px-4 bg-surface-hover rounded-xl border border-border text-sm text-text-primary focus:border-primary focus:outline-none transition-colors"
                         />
                         <button
                             onClick={handleSaveEmail}

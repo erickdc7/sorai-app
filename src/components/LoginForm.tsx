@@ -81,7 +81,7 @@ export default function LoginForm({ onClose }: LoginFormProps) {
                             onChange={(e) => handleEmailChange(e.target.value)}
                             placeholder="email@example.com"
                             maxLength={254}
-                            className="w-full h-11 pl-9 pr-4 bg-surface-hover rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 text-text-primary placeholder-gray-400 transition-colors"
+                            className="w-full h-11 pl-9 pr-4 bg-surface-hover rounded-xl border border-border focus:border-primary focus:outline-none text-text-primary placeholder-gray-400 transition-colors"
                             required
                         />
                     </div>
@@ -101,7 +101,7 @@ export default function LoginForm({ onClose }: LoginFormProps) {
                             onChange={(e) => handlePasswordChange(e.target.value)}
                             placeholder="••••••••"
                             maxLength={64}
-                            className="w-full h-11 pl-9 pr-10 bg-surface-hover rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 text-text-primary placeholder-gray-400 transition-colors"
+                            className="w-full h-11 pl-9 pr-10 bg-surface-hover rounded-xl border border-border focus:border-primary focus:outline-none text-text-primary placeholder-gray-400 transition-colors"
                             required
                         />
                         <button

@@ -76,7 +76,7 @@ export default function PasswordSection({ supabase }: PasswordSectionProps) {
                             onChange={(e) => handlePasswordChange(e.target.value)}
                             placeholder="Min 8 characters"
                             maxLength={64}
-                            className="w-full h-10 px-4 pr-10 bg-surface-hover rounded-xl border border-border text-sm text-text-primary placeholder-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 transition-colors"
+                            className="w-full h-10 px-4 pr-10 bg-surface-hover rounded-xl border border-border text-sm text-text-primary placeholder-gray-400 focus:border-primary focus:outline-none transition-colors"
                         />
                         <button
                             type="button"
@@ -99,7 +99,7 @@ export default function PasswordSection({ supabase }: PasswordSectionProps) {
                             onChange={(e) => handleConfirmPasswordChange(e.target.value)}
                             placeholder="Repeat new password"
                             maxLength={64}
-                            className="w-full h-10 px-4 pr-10 bg-surface-hover rounded-xl border border-border text-sm text-text-primary placeholder-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 transition-colors"
+                            className="w-full h-10 px-4 pr-10 bg-surface-hover rounded-xl border border-border text-sm text-text-primary placeholder-gray-400 focus:border-primary focus:outline-none transition-colors"
                         />
                         <button
                             type="button"

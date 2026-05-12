@@ -70,7 +70,7 @@ export default function PreferencesSection({
                 <button
                     onClick={handleToggle}
                     disabled={saving}
-                    className="relative w-12 h-7 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50"
+                    className="relative w-12 h-7 rounded-full transition-colors duration-200 focus:outline-none disabled:opacity-50"
                     style={{
                         backgroundColor: sensitive
                             ? "var(--color-primary)"
@@ -102,7 +102,7 @@ export default function PreferencesSection({
                 </div>
                 <button
                     onClick={() => setTheme(isDark ? "light" : "dark")}
-                    className="relative w-12 h-7 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    className="relative w-12 h-7 rounded-full transition-colors duration-200 focus:outline-none"
                     style={{
                         backgroundColor: isDark
                             ? "var(--color-primary)"
