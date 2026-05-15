@@ -405,7 +405,7 @@ export default function AnimeHeroBanner({
                                                                         }}
                                                                         className="w-full text-left px-4 py-2 text-sm transition-colors flex items-center gap-2 hover:bg-surface-hover"
                                                                         style={{
-                                                                            color: isSelected ? "var(--color-primary)" : "var(--color-text-primary)",
+                                                                            color: isSelected ? STATUS_COLORS[userListItem.status] : "var(--color-text-primary)",
                                                                         }}
                                                                     >
                                                                         <div className="flex gap-0.5">
@@ -422,7 +422,7 @@ export default function AnimeHeroBanner({
                                                                         </div>
                                                                         <span style={{ fontWeight: isSelected ? 600 : 400 }}>{score}</span>
                                                                         <span className="text-xs text-gray-400">/ 10</span>
-                                                                        {isSelected && <Check size={12} className="ml-auto" />}
+                                                                        {isSelected && <Check size={12} className="ml-auto" style={{ color: STATUS_COLORS[userListItem.status] }} />}
                                                                     </button>
                                                                 );
                                                             })}
