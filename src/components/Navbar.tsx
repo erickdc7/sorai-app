@@ -164,10 +164,10 @@ function NavbarContent() {
                                         <img
                                             src={profile.avatar_url}
                                             alt="Avatar"
-                                            className="w-8 h-8 rounded-full object-cover ring-2 ring-purple-200"
+                                            className="w-8 h-8 rounded-full object-cover"
                                         />
                                     ) : (
-                                        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-medium ring-2 ring-purple-200">
+                                        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-medium">
                                             {username.charAt(0).toUpperCase()}
                                         </div>
                                     )}
