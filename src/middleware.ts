@@ -26,31 +26,11 @@ export function middleware(request: NextRequest) {
         return NextResponse.next();
     }
 
-    // Check for any Supabase auth cookie (sb-*-auth-token or chunked variants)
-    const hasAuthCookie = request.cookies
-        .getAll()
-        .some((cookie) => cookie.name.includes("auth-token"));
-
-    // Also check for the sb-<ref>-auth-token in the request headers
-    // Some Supabase configurations use localStorage, in which case
-    // we allow the request through and let client-side handle the redirect
-    if (!hasAuthCookie) {
-        // Check if the referer suggests the user came from within the app
-        // This allows client-side navigation while blocking direct URL access
-        const referer = request.headers.get("referer");
-        const origin = request.nextUrl.origin;
-
-        if (referer && referer.startsWith(origin)) {
-            // User is navigating within the app — let client-side auth handle it
-            return NextResponse.next();
-        }
-
-        // Direct URL access without auth cookie — redirect to home
-        const url = request.nextUrl.clone();
-        url.pathname = "/";
-        return NextResponse.redirect(url);
-    }
-
+    // Supabase JS stores auth tokens in localStorage (not cookies),
+    // so Edge middleware cannot reliably detect auth state — especially
+    // on hard refreshes (F5) where there is no referer header.
+    // Let all requests through; client-side useAuth() redirects
+    // unauthenticated users, and Supabase RLS enforces data security.
     return NextResponse.next();
 }
 

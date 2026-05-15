@@ -71,7 +71,7 @@ export default function GridCard({ item, onDelete }: GridCardProps) {
                     e.stopPropagation();
                     onDelete();
                 }}
-                className="absolute md:opacity-0 group-hover:opacity-100 transition-all duration-200 w-7 h-7 flex items-center justify-center rounded-full text-gray-400 z-10"
+                className="absolute md:opacity-0 group-hover:opacity-100 transition-all duration-200 w-7 h-7 flex items-center justify-center rounded-full text-gray-500 z-10"
                 style={{
                     top: "auto",
                     right: "8px",
@@ -87,7 +87,7 @@ export default function GridCard({ item, onDelete }: GridCardProps) {
                 }}
                 onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = "var(--color-glass-white-90)";
-                    e.currentTarget.style.color = "var(--color-text-secondary)";
+                    e.currentTarget.style.color = "";
                     e.currentTarget.style.boxShadow = "none";
                     e.currentTarget.style.transform = "scale(1)";
                 }}
