@@ -84,6 +84,10 @@ export async function fetchSequential<TInput, TOutput>(
     return results;
 }
 
+const MAX_RETRIES = 3;
+const RETRY_DELAY_MS = 1000;
+const RETRYABLE_STATUSES = [503, 504];
+
 async function jikanFetch<T>(endpoint: string): Promise<T> {
     const cacheKey = `jikan:${endpoint}`;
 
@@ -93,30 +97,46 @@ async function jikanFetch<T>(endpoint: string): Promise<T> {
         if (cached) return cached;
     }
 
-    const res = await fetch(`${JIKAN_BASE}${endpoint}`);
+    let lastError: JikanError | null = null;
 
-    if (res.status === 429) {
-        throw new JikanError(
-            "Too many requests. Please wait a moment and try again.",
-            429
-        );
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        const res = await fetch(`${JIKAN_BASE}${endpoint}`);
+
+        if (res.status === 429) {
+            throw new JikanError(
+                "Too many requests. Please wait a moment and try again.",
+                429
+            );
+        }
+
+        if (RETRYABLE_STATUSES.includes(res.status) && attempt < MAX_RETRIES) {
+            lastError = new JikanError(
+                `Error connecting to the anime API (${res.status})`,
+                res.status
+            );
+            await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
+            continue;
+        }
+
+        if (!res.ok) {
+            throw new JikanError(
+                `Error connecting to the anime API (${res.status})`,
+                res.status
+            );
+        }
+
+        const data: T = await res.json();
+
+        // Cache successful responses
+        if (typeof window !== "undefined") {
+            setCache(cacheKey, data);
+        }
+
+        return data;
     }
 
-    if (!res.ok) {
-        throw new JikanError(
-            `Error connecting to the anime API (${res.status})`,
-            res.status
-        );
-    }
-
-    const data: T = await res.json();
-
-    // Cache successful responses
-    if (typeof window !== "undefined") {
-        setCache(cacheKey, data);
-    }
-
-    return data;
+    // All retries exhausted (should not reach here, but safety net)
+    throw lastError ?? new JikanError("Request failed after retries", 0);
 }
 
 export async function getTopAnime(
