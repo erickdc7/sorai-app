@@ -128,7 +128,7 @@ export default function ListCard({
                             setOpenScoreDropdown(isScoreOpen ? null : item.mal_id);
                             setShowStatus(false);
                         }}
-                        className="flex items-center gap-1 px-3 h-8 rounded-lg text-xs text-gray-700 hover:bg-surface-alt transition-colors border border-border"
+                        className="flex items-center gap-1 px-3 h-8 rounded-lg text-xs text-text-secondary hover:bg-surface-alt transition-colors border border-border"
                     >
                         <Star
                             size={12}
