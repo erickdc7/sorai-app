@@ -157,7 +157,7 @@ export default function ListCard({
                                             onClick={() => onScoreChange(item.mal_id, score)}
                                             className="w-full text-left px-3 py-2 text-xs hover:bg-surface-hover flex items-center gap-2 transition-colors"
                                             style={{
-                                                color: isSelected ? "var(--color-primary)" : "var(--color-text-primary)",
+                                                color: isSelected ? STATUS_COLORS[item.status] : "var(--color-text-primary)",
                                                 fontWeight: isSelected ? 600 : 400,
                                             }}
                                         >
@@ -169,7 +169,7 @@ export default function ListCard({
                                             {score}
                                             <span className="text-gray-400">/10</span>
                                             {isSelected && (
-                                                <Check size={10} className="ml-auto text-primary" />
+                                                <Check size={10} className="ml-auto" style={{ color: STATUS_COLORS[item.status] }} />
                                             )}
                                         </button>
                                     );
