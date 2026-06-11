@@ -12,7 +12,7 @@ import DangerZoneSection from "@/components/settings/DangerZoneSection";
 
 export default function SettingsPage() {
     const router = useRouter();
-    const { user, username, isLoading: authLoading, profile, refreshProfile, supabase } = useAuth();
+    const { user, username, isLoading: authLoading, profile, refreshProfile, supabase, applyProfileUpdate } = useAuth();
 
     // Redirect if not logged in
     useEffect(() => {
@@ -81,6 +81,7 @@ export default function SettingsPage() {
                         userId={user.id}
                         showSensitiveContent={profile?.show_sensitive_content ?? false}
                         refreshProfile={refreshProfile}
+                        applyProfileUpdate={applyProfileUpdate}
                     />
 
                     <DangerZoneSection

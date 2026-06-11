@@ -12,6 +12,10 @@ interface PreferencesSectionProps {
     userId: string;
     showSensitiveContent: boolean;
     refreshProfile: () => Promise<void>;
+    applyProfileUpdate: (updates: {
+        show_sensitive_content?: boolean;
+        theme_preference?: "light" | "dark" | null;
+    }) => void;
 }
 
 export default function PreferencesSection({
@@ -19,10 +23,12 @@ export default function PreferencesSection({
     userId,
     showSensitiveContent,
     refreshProfile,
+    applyProfileUpdate,
 }: PreferencesSectionProps) {
     const [sensitive, setSensitive] = useState(showSensitiveContent);
     const [saving, setSaving] = useState(false);
-    const { theme, setTheme, resolvedTheme } = useTheme();
+    const [savingTheme, setSavingTheme] = useState(false);
+    const { setTheme, resolvedTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => setMounted(true), []);
@@ -34,6 +40,7 @@ export default function PreferencesSection({
     const handleToggle = async () => {
         const newValue = !sensitive;
         setSensitive(newValue);
+        applyProfileUpdate({ show_sensitive_content: newValue });
         setSaving(true);
         try {
             await updateUserProfile(supabase, userId, {
@@ -43,9 +50,29 @@ export default function PreferencesSection({
             toast.success(newValue ? "Sensitive content enabled" : "Sensitive content disabled");
         } catch {
             setSensitive(!newValue);
+            applyProfileUpdate({ show_sensitive_content: !newValue });
             toast.error("Failed to update preference");
         }
         setSaving(false);
+    };
+
+    const handleThemeToggle = async () => {
+        const newTheme = isDark ? "light" : "dark";
+        setTheme(newTheme);
+        applyProfileUpdate({ theme_preference: newTheme });
+        setSavingTheme(true);
+
+        try {
+            await updateUserProfile(supabase, userId, {
+                theme_preference: newTheme,
+            });
+            await refreshProfile();
+            toast.success(newTheme === "dark" ? "Dark mode enabled" : "Light mode enabled");
+        } catch {
+            toast.error("Theme changed locally, but could not be saved to your account");
+        }
+
+        setSavingTheme(false);
     };
 
     const isDark = mounted && resolvedTheme === "dark";
@@ -101,7 +128,8 @@ export default function PreferencesSection({
                     </p>
                 </div>
                 <button
-                    onClick={() => setTheme(isDark ? "light" : "dark")}
+                    onClick={handleThemeToggle}
+                    disabled={savingTheme}
                     className="relative w-12 h-7 rounded-full transition-colors duration-200 focus:outline-none"
                     style={{
                         backgroundColor: isDark

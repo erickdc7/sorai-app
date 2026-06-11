@@ -4,6 +4,7 @@ export interface UserProfile {
     id: string;
     avatar_url: string | null;
     show_sensitive_content: boolean;
+    theme_preference: "light" | "dark" | null;
     deactivated_at: string | null;
     created_at: string;
     updated_at: string;
@@ -43,7 +44,7 @@ export async function ensureUserProfile(
 export async function updateUserProfile(
     supabase: SupabaseClient,
     userId: string,
-    updates: Partial<Pick<UserProfile, "avatar_url" | "show_sensitive_content">>
+    updates: Partial<Pick<UserProfile, "avatar_url" | "show_sensitive_content" | "theme_preference">>
 ): Promise<void> {
     const { error } = await supabase
         .from("user_profiles")

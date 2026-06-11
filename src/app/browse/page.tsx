@@ -203,7 +203,7 @@ function BrowseContent() {
         setResults([]);
         fetchData(urlPage, urlFilter);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [sfw]);
 
     const handleFilterChange = (filter: string) => {
         if (filter === typeFilter) return;

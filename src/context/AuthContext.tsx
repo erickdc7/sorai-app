@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { User, Session } from "@supabase/supabase-js";
+import { useTheme } from "next-themes";
 import { createClient } from "@/lib/supabase";
 import { getUserProfile, ensureUserProfile, UserProfile } from "@/lib/user-profile";
 
@@ -24,6 +25,7 @@ interface AuthContextType {
     username: string;
     profile: UserProfile | null;
     refreshProfile: () => Promise<void>;
+    applyProfileUpdate: (updates: Partial<UserProfile>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -36,6 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [openModal, setOpenModal] = useState<"login" | "register" | null>(null);
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const signingInRef = useRef(false);
+    const { setTheme } = useTheme();
 
     const fetchProfile = useCallback(
         async (userId: string) => {
@@ -55,6 +58,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             await fetchProfile(user.id);
         }
     }, [user, fetchProfile]);
+
+    const applyProfileUpdate = useCallback((updates: Partial<UserProfile>) => {
+        setProfile((current) => (current ? { ...current, ...updates } : current));
+    }, []);
 
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
@@ -84,6 +91,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         return () => subscription.unsubscribe();
     }, [supabase, fetchProfile]);
+
+    useEffect(() => {
+        if (isLoading) return;
+
+        if (!user) {
+            setTheme("system");
+            return;
+        }
+
+        setTheme(profile?.theme_preference ?? "system");
+    }, [isLoading, user, profile?.theme_preference, setTheme]);
 
     const signIn = useCallback(
         async (email: string, password: string) => {
@@ -187,6 +205,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 username,
                 profile,
                 refreshProfile,
+                applyProfileUpdate,
             }}
         >
             {children}

@@ -88,7 +88,7 @@ export default function HomePage() {
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [showSensitive]);
 
     const isLoggedIn = !!user;
 

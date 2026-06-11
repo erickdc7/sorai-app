@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS public.user_profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   avatar_url TEXT DEFAULT NULL,
   show_sensitive_content BOOLEAN DEFAULT FALSE,
+  theme_preference TEXT DEFAULT NULL CHECK (theme_preference IN ('light', 'dark')),
   deactivated_at TIMESTAMPTZ DEFAULT NULL,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()

@@ -90,7 +90,7 @@ function SearchContent() {
             fetchResults(urlPage, urlFilter);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [query]);
+    }, [query, showSensitive]);
 
     const handleFilterChange = (type: string) => {
         if (type === typeFilter) return;
