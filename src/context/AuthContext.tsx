@@ -100,7 +100,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             return;
         }
 
-        setTheme(profile?.theme_preference ?? "system");
+        if (!profile) return;
+
+        setTheme(profile.theme_preference ?? "system");
     }, [isLoading, user, profile?.theme_preference, setTheme]);
 
     const signIn = useCallback(
