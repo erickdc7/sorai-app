@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { TrendingUp, Sparkles, ArrowRight, BookOpen } from "lucide-react";
+import { Sparkles, ArrowRight, BookOpen } from "lucide-react";
 import Link from "next/link";
 import HeroCarousel from "@/components/HeroCarousel";
 import AnimeCard from "@/components/AnimeCard";
 import AnimeCardSkeleton from "@/components/AnimeCardSkeleton";
+import MostPopularCarousel from "@/components/MostPopularCarousel";
 import { getTopAnime, getSeasonNow, getAnimeByIdThrottled, fetchSequential, JikanError } from "@/lib/jikan";
 import { mapToCardData, deduplicateByMalId } from "@/lib/mappers";
 import { useAuth } from "@/context/AuthContext";
@@ -45,7 +46,7 @@ export default function HomePage() {
     const { user, setOpenModal, profile } = useAuth();
     const showSensitive = profile?.show_sensitive_content ?? false;
     const [heroAnimes, setHeroAnimes] = useState<ReturnType<typeof mapToHeroData>[]>([]);
-    const [popular, setPopular] = useState<AnimeCardData[]>([]);
+    const [popular, setPopular] = useState<JikanAnime[]>([]);
     const [season, setSeason] = useState<AnimeCardData[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -67,9 +68,8 @@ export default function HomePage() {
 
             // Fetch popular anime (queue handles rate limiting)
             const popularResult = await getTopAnime("bypopularity", 16, 1, undefined, !showSensitive);
-            const popularMapped = popularResult.data.map(mapToCardData);
-            const popularUnique = deduplicateByMalId(popularMapped);
-            setPopular(popularUnique.slice(0, 12));
+            const popularUnique = deduplicateByMalId(popularResult.data);
+            setPopular(popularUnique.slice(0, 5));
 
             // Fetch seasonal anime
             const seasonResult = await getSeasonNow(16, 1, !showSensitive);
@@ -150,34 +150,13 @@ export default function HomePage() {
                 </section>
 
                 {/* Popular */}
-                <section className="mb-12">
-                    <div className="flex items-center justify-between mb-5">
-                        <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-primary-light">
-                                <TrendingUp size={14} className="text-primary" />
-                            </div>
-                            <h2 className="text-text-primary text-[1.5rem] font-semibold">
-                                Most Popular
-                            </h2>
-                        </div>
-                        <Link
-                            href="/browse?type=popular"
-                            className="flex items-center gap-1 text-sm text-primary transition-all hover:gap-2"
-                        >
-                            View all <ArrowRight size={14} />
-                        </Link>
-                    </div>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                        {loading
-                            ? Array.from({ length: 12 }).map((_, i) => (
-                                <AnimeCardSkeleton key={i} />
-                            ))
-                            : popular.map((anime) => (
-                                <AnimeCard key={anime.mal_id} anime={anime} />
-                            ))}
-                    </div>
-                </section>
+                {loading ? (
+                    <section className="mb-12">
+                        <div className="skeleton" style={{ height: "460px", borderRadius: "20px" }} />
+                    </section>
+                ) : (
+                    <MostPopularCarousel animes={popular} />
+                )}
 
                 {/* CTA Banner */}
                 {!isLoggedIn && (
