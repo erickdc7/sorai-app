@@ -7,6 +7,7 @@ import HeroCarousel from "@/components/HeroCarousel";
 import AnimeCard from "@/components/AnimeCard";
 import AnimeCardSkeleton from "@/components/AnimeCardSkeleton";
 import MostPopularCarousel from "@/components/MostPopularCarousel";
+import TopAnimeRanking from "@/components/TopAnimeRanking";
 import { getTopAnime, getSeasonNow, getAnimeByIdThrottled, fetchSequential, JikanError } from "@/lib/jikan";
 import { mapToCardData, deduplicateByMalId } from "@/lib/mappers";
 import { useAuth } from "@/context/AuthContext";
@@ -38,7 +39,7 @@ const HERO_ANIME = [
     { mal_id: 16498, bg: "/images/16498.webp" },   // Shingeki no Kyojin
     { mal_id: 1535,  bg: "/images/1535.webp" },     // Death Note
     { mal_id: 5114,  bg: "/images/5114.webp" },     // Fullmetal Alchemist: Brotherhood
-    { mal_id: 30276, bg: "/images/30276.webp" },  // One Punch Man
+    { mal_id: 30276, bg: "/images/30276.webp" },    // One Punch Man
     { mal_id: 38000, bg: "/images/38000.webp" },    // Kimetsu no Yaiba
 ];
 
@@ -48,6 +49,8 @@ export default function HomePage() {
     const [heroAnimes, setHeroAnimes] = useState<ReturnType<typeof mapToHeroData>[]>([]);
     const [popular, setPopular] = useState<JikanAnime[]>([]);
     const [season, setSeason] = useState<AnimeCardData[]>([]);
+    const [topAiring, setTopAiring] = useState<JikanAnime[]>([]);
+    const [topPopular, setTopPopular] = useState<JikanAnime[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -71,11 +74,18 @@ export default function HomePage() {
             const popularUnique = deduplicateByMalId(popularResult.data);
             setPopular(popularUnique.slice(0, 5));
 
-            // Fetch seasonal anime
+            // Fetch seasonal anime (8 for 4x2 grid)
             const seasonResult = await getSeasonNow(16, 1, !showSensitive);
             const seasonMapped = seasonResult.data.map(mapToCardData);
             const seasonUnique = deduplicateByMalId(seasonMapped);
-            setSeason(seasonUnique.slice(0, 12));
+            setSeason(seasonUnique.slice(0, 8));
+
+            // Fetch top airing (weekly) and top popular (monthly) for ranking sidebar
+            const topAiringResult = await getTopAnime("airing", 10, 1, undefined, !showSensitive);
+            setTopAiring(topAiringResult.data.slice(0, 10));
+
+            const topPopularResult = await getTopAnime("bypopularity", 10, 1, undefined, !showSensitive);
+            setTopPopular(topPopularResult.data.slice(0, 10));
         } catch (err) {
             if (err instanceof JikanError && err.status === 429) {
                 setError(err.message);
@@ -116,36 +126,48 @@ export default function HomePage() {
                     </div>
                 )}
 
-                {/* Season */}
+                {/* Season + Top Ranking sidebar */}
                 <section className="mb-12">
-                    <div className="flex items-center justify-between mb-5">
-                        <div className="flex items-center gap-2">
-                            <div
-                                className="w-7 h-7 rounded-lg flex items-center justify-center"
-                                style={{ backgroundColor: "var(--color-season-icon-bg)" }}
-                            >
-                                <Sparkles size={14} style={{ color: "var(--color-type-special)" }} />
+                    <div className="season-ranking-layout">
+                        {/* Left: In Season grid */}
+                        <div>
+                            <div className="flex items-center justify-between mb-5">
+                                <div className="flex items-center gap-2">
+                                    <div
+                                        className="w-7 h-7 rounded-lg flex items-center justify-center"
+                                        style={{ backgroundColor: "var(--color-season-icon-bg)" }}
+                                    >
+                                        <Sparkles size={14} style={{ color: "var(--color-type-special)" }} />
+                                    </div>
+                                    <h2 className="text-text-primary text-[1.5rem] font-semibold">
+                                        In Season
+                                    </h2>
+                                </div>
+                                <Link
+                                    href="/browse?type=season"
+                                    className="flex items-center gap-1 text-sm text-primary transition-all hover:gap-2"
+                                >
+                                    View all <ArrowRight size={14} />
+                                </Link>
                             </div>
-                            <h2 className="text-text-primary text-[1.5rem] font-semibold">
-                                In Season
-                            </h2>
-                        </div>
-                        <Link
-                            href="/browse?type=season"
-                            className="flex items-center gap-1 text-sm text-primary transition-all hover:gap-2"
-                        >
-                            View all <ArrowRight size={14} />
-                        </Link>
-                    </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                        {loading
-                            ? Array.from({ length: 12 }).map((_, i) => (
-                                <AnimeCardSkeleton key={i} />
-                            ))
-                            : season.map((anime) => (
-                                <AnimeCard key={anime.mal_id} anime={anime} />
-                            ))}
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+                                {loading
+                                    ? Array.from({ length: 8 }).map((_, i) => (
+                                        <AnimeCardSkeleton key={i} />
+                                    ))
+                                    : season.map((anime) => (
+                                        <AnimeCard key={anime.mal_id} anime={anime} />
+                                    ))}
+                            </div>
+                        </div>
+
+                        {/* Right: Top Anime Ranking */}
+                        <TopAnimeRanking
+                            airingData={topAiring}
+                            popularData={topPopular}
+                            loading={loading}
+                        />
                     </div>
                 </section>
 
