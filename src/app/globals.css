@@ -253,15 +253,26 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
 }
 
 /* ── Most Popular Carousel ── */
-@keyframes popularSlideIn {
-  from {
-    opacity: 0;
-    transform: translateX(24px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+.popular-carousel__nav-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-border);
+  background-color: transparent;
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.popular-carousel__nav-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+.popular-carousel__nav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Default: show desktop, hide mobile */

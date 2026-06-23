@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, TrendingUp, ArrowRight } from "lucide-react";
 import type { JikanAnime, JikanNamedResource } from "@/types/jikan";
@@ -18,7 +18,10 @@ function truncateSynopsis(text: string | null, maxWords: number = 100): string {
 
 function MostPopularCarousel({ animes }: MostPopularCarouselProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [displayIndex, setDisplayIndex] = useState(0);
     const [isTransitioning, setIsTransitioning] = useState(false);
+    const [fadeState, setFadeState] = useState<"visible" | "fading-out" | "fading-in">("visible");
+    const contentRef = useRef<HTMLDivElement>(null);
 
     const items = animes.slice(0, 5);
 
@@ -26,11 +29,32 @@ function MostPopularCarousel({ animes }: MostPopularCarouselProps) {
         (index: number) => {
             if (isTransitioning) return;
             setIsTransitioning(true);
+
+            // Phase 1: fade out current content
+            setFadeState("fading-out");
             setCurrentIndex(index);
-            setTimeout(() => setIsTransitioning(false), 500);
         },
         [isTransitioning]
     );
+
+    // When fade-out completes, swap content and fade in
+    useEffect(() => {
+        if (fadeState === "fading-out") {
+            const timer = setTimeout(() => {
+                setDisplayIndex(currentIndex);
+                setFadeState("fading-in");
+            }, 250); // match CSS transition duration
+            return () => clearTimeout(timer);
+        }
+
+        if (fadeState === "fading-in") {
+            const timer = setTimeout(() => {
+                setFadeState("visible");
+                setIsTransitioning(false);
+            }, 300);
+            return () => clearTimeout(timer);
+        }
+    }, [fadeState, currentIndex]);
 
     const goPrev = useCallback(() => {
         goTo(currentIndex === 0 ? items.length - 1 : currentIndex - 1);
@@ -42,7 +66,8 @@ function MostPopularCarousel({ animes }: MostPopularCarouselProps) {
 
     if (items.length === 0) return null;
 
-    const anime = items[currentIndex];
+    // Use displayIndex for rendering — it only updates mid-transition
+    const anime = items[displayIndex];
     const genres = [
         ...(anime.genres || []),
         ...(anime.themes || []),
@@ -53,33 +78,24 @@ function MostPopularCarousel({ animes }: MostPopularCarouselProps) {
         anime.images?.jpg?.image_url ||
         "";
 
+    // Compute content styles based on fade state
+    const contentStyle: React.CSSProperties = {
+        transition: "opacity 0.25s ease, transform 0.3s ease",
+        opacity: fadeState === "fading-out" ? 0 : 1,
+        transform: fadeState === "fading-out"
+            ? "translateX(-12px)"
+            : fadeState === "fading-in"
+                ? "translateX(0)"
+                : "none",
+    };
+
     const navButtons = (
         <>
             <button
                 onClick={goPrev}
                 disabled={isTransitioning}
                 aria-label="Previous anime"
-                style={{
-                    width: "36px",
-                    height: "36px",
-                    borderRadius: "50%",
-                    border: "1.5px solid var(--color-border)",
-                    backgroundColor: "transparent",
-                    color: "var(--color-text-primary)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                }}
-                onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = "var(--color-primary)";
-                    e.currentTarget.style.color = "var(--color-primary)";
-                }}
-                onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = "var(--color-border)";
-                    e.currentTarget.style.color = "var(--color-text-primary)";
-                }}
+                className="popular-carousel__nav-btn"
             >
                 <ChevronLeft size={16} />
             </button>
@@ -87,27 +103,7 @@ function MostPopularCarousel({ animes }: MostPopularCarouselProps) {
                 onClick={goNext}
                 disabled={isTransitioning}
                 aria-label="Next anime"
-                style={{
-                    width: "36px",
-                    height: "36px",
-                    borderRadius: "50%",
-                    border: "1.5px solid var(--color-border)",
-                    backgroundColor: "transparent",
-                    color: "var(--color-text-primary)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                }}
-                onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = "var(--color-primary)";
-                    e.currentTarget.style.color = "var(--color-primary)";
-                }}
-                onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = "var(--color-border)";
-                    e.currentTarget.style.color = "var(--color-text-primary)";
-                }}
+                className="popular-carousel__nav-btn"
             >
                 <ChevronRight size={16} />
             </button>
@@ -134,14 +130,8 @@ function MostPopularCarousel({ animes }: MostPopularCarouselProps) {
                 </Link>
             </div>
 
-            {/* Carousel Content */}
-            <div
-                className="popular-carousel"
-                key={currentIndex}
-                style={{
-                    animation: "popularSlideIn 0.45s cubic-bezier(0.22, 1, 0.36, 1)",
-                }}
-            >
+            {/* Carousel Content — NO key prop, uses fade transition instead */}
+            <div className="popular-carousel" ref={contentRef}>
                 {/* ── Desktop 3-column grid (visible ≥1024px) ── */}
                 <div
                     className="popular-carousel__slide popular-carousel--desktop"
@@ -160,7 +150,7 @@ function MostPopularCarousel({ animes }: MostPopularCarouselProps) {
                             minHeight: "460px",
                         }}
                     >
-                        <div>
+                        <div style={contentStyle}>
                             <Link href={`/anime/${anime.mal_id}`}>
                                 <h3
                                     className="text-text-primary"
@@ -215,6 +205,7 @@ function MostPopularCarousel({ animes }: MostPopularCarouselProps) {
                             </div>
                         </div>
 
+                        {/* Nav arrows — NOT inside contentStyle, so they don't flash */}
                         <div style={{ display: "flex", gap: "10px" }}>
                             {navButtons}
                         </div>
@@ -229,7 +220,7 @@ function MostPopularCarousel({ animes }: MostPopularCarouselProps) {
                             minHeight: "460px",
                         }}
                     >
-                        <div>
+                        <div style={contentStyle}>
                             <p
                                 className="text-text-secondary"
                                 style={{
@@ -265,6 +256,7 @@ function MostPopularCarousel({ animes }: MostPopularCarouselProps) {
                             )}
                         </div>
 
+                        {/* Ranking — transitions smoothly */}
                         <div
                             className="text-text-primary"
                             style={{
@@ -273,14 +265,15 @@ function MostPopularCarousel({ animes }: MostPopularCarouselProps) {
                                 lineHeight: 1,
                                 letterSpacing: "0.02em",
                                 alignSelf: "flex-end",
+                                ...contentStyle,
                             }}
                         >
-                            #{currentIndex + 1}
+                            #{displayIndex + 1}
                         </div>
                     </div>
 
                     {/* Column 3: Poster Image */}
-                    <div style={{ height: "100%" }}>
+                    <div style={{ height: "100%", ...contentStyle }}>
                         <Link
                             href={`/anime/${anime.mal_id}`}
                             style={{
@@ -317,7 +310,7 @@ function MostPopularCarousel({ animes }: MostPopularCarouselProps) {
                 <div className="popular-carousel--mobile">
                     <div className="popular-carousel--mobile__grid">
                         {/* Column 1: Poster */}
-                        <div className="popular-carousel--mobile__poster">
+                        <div className="popular-carousel--mobile__poster" style={contentStyle}>
                             <Link
                                 href={`/anime/${anime.mal_id}`}
                                 className="popular-carousel--mobile__poster-link"
@@ -333,7 +326,7 @@ function MostPopularCarousel({ animes }: MostPopularCarouselProps) {
 
                         {/* Column 2: Title → Meta → Synopsis → Genres → Nav + Rank */}
                         <div className="popular-carousel--mobile__info">
-                            <div>
+                            <div style={contentStyle}>
                                 {/* Title */}
                                 <Link href={`/anime/${anime.mal_id}`}>
                                     <h3
@@ -431,10 +424,10 @@ function MostPopularCarousel({ animes }: MostPopularCarouselProps) {
                                 )}
                             </div>
 
-                            {/* Bottom row: ranking left + arrows right on tablet; reversed on mobile via CSS */}
+                            {/* Bottom row: ranking left + arrows right on tablet */}
                             <div className="popular-carousel--mobile__footer">
-                                <div className="popular-carousel--mobile__rank">
-                                    #{currentIndex + 1}
+                                <div className="popular-carousel--mobile__rank" style={contentStyle}>
+                                    #{displayIndex + 1}
                                 </div>
                                 <div className="popular-carousel--mobile__nav">
                                     {navButtons}
