@@ -86,7 +86,7 @@ export async function fetchSequential<TInput, TOutput>(
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 1000;
-const RETRYABLE_STATUSES = [503, 504];
+const RETRYABLE_STATUSES = [429, 503, 504];
 
 async function jikanFetch<T>(endpoint: string): Promise<T> {
     const cacheKey = `jikan:${endpoint}`;
@@ -102,25 +102,24 @@ async function jikanFetch<T>(endpoint: string): Promise<T> {
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
         const res = await fetch(`${JIKAN_BASE}${endpoint}`);
 
-        if (res.status === 429) {
-            throw new JikanError(
-                "Too many requests. Please wait a moment and try again.",
-                429
-            );
-        }
-
+        // Silent retry for 429 (rate limit) and server errors with exponential backoff
         if (RETRYABLE_STATUSES.includes(res.status) && attempt < MAX_RETRIES) {
             lastError = new JikanError(
-                `Error connecting to the anime API (${res.status})`,
+                res.status === 429
+                    ? "Too many requests. Please wait a moment and try again."
+                    : `Error connecting to the anime API (${res.status})`,
                 res.status
             );
-            await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
+            const backoff = RETRY_DELAY_MS * Math.pow(2, attempt - 1); // 1s, 2s
+            await new Promise((r) => setTimeout(r, backoff));
             continue;
         }
 
         if (!res.ok) {
             throw new JikanError(
-                `Error connecting to the anime API (${res.status})`,
+                res.status === 429
+                    ? "Too many requests. Please wait a moment and try again."
+                    : `Error connecting to the anime API (${res.status})`,
                 res.status
             );
         }
@@ -135,7 +134,7 @@ async function jikanFetch<T>(endpoint: string): Promise<T> {
         return data;
     }
 
-    // All retries exhausted (should not reach here, but safety net)
+    // All retries exhausted
     throw lastError ?? new JikanError("Request failed after retries", 0);
 }
 
@@ -146,7 +145,7 @@ export async function getTopAnime(
     type?: string,
     sfw: boolean = true
 ): Promise<JikanPaginatedResponse<JikanAnime>> {
-    return jikanFetch<JikanPaginatedResponse<JikanAnime>>(
+    return rateLimitedFetch<JikanPaginatedResponse<JikanAnime>>(
         `/top/anime?filter=${filter}&limit=${limit}&page=${page}${type ? `&type=${type}` : ""}${sfw ? "&sfw" : ""}`
     );
 }
@@ -157,7 +156,7 @@ export async function getSeasonNow(
     sfw: boolean = true,
     type?: string
 ): Promise<JikanPaginatedResponse<JikanAnime>> {
-    return jikanFetch<JikanPaginatedResponse<JikanAnime>>(
+    return rateLimitedFetch<JikanPaginatedResponse<JikanAnime>>(
         `/seasons/now?limit=${limit}&page=${page}${sfw ? "&sfw" : ""}${type ? `&filter=${type}` : ""}`
     );
 }
@@ -168,7 +167,7 @@ export async function getSeasonUpcoming(
     sfw: boolean = true,
     type?: string
 ): Promise<JikanPaginatedResponse<JikanAnime>> {
-    return jikanFetch<JikanPaginatedResponse<JikanAnime>>(
+    return rateLimitedFetch<JikanPaginatedResponse<JikanAnime>>(
         `/seasons/upcoming?limit=${limit}&page=${page}${sfw ? "&sfw" : ""}${type ? `&filter=${type}` : ""}`
     );
 }
@@ -180,7 +179,7 @@ export async function getAnimeByGenre(
     sfw: boolean = true,
     type?: string
 ): Promise<JikanPaginatedResponse<JikanAnime>> {
-    return jikanFetch<JikanPaginatedResponse<JikanAnime>>(
+    return rateLimitedFetch<JikanPaginatedResponse<JikanAnime>>(
         `/anime?genres=${genreId}&order_by=members&sort=desc&limit=${limit}&page=${page}${sfw ? "&sfw" : ""}${type ? `&type=${type}` : ""}`
     );
 }
@@ -193,7 +192,7 @@ export async function getSeasonByYear(
     sfw: boolean = true,
     type?: string
 ): Promise<JikanPaginatedResponse<JikanAnime>> {
-    return jikanFetch<JikanPaginatedResponse<JikanAnime>>(
+    return rateLimitedFetch<JikanPaginatedResponse<JikanAnime>>(
         `/seasons/${year}/${season}?limit=${limit}&page=${page}${sfw ? "&sfw" : ""}${type ? `&filter=${type}` : ""}`
     );
 }
@@ -205,33 +204,33 @@ export async function searchAnime(
     sfw: boolean = true,
     type?: string
 ): Promise<JikanPaginatedResponse<JikanAnime>> {
-    return jikanFetch<JikanPaginatedResponse<JikanAnime>>(
+    return rateLimitedFetch<JikanPaginatedResponse<JikanAnime>>(
         `/anime?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}${sfw ? "&sfw" : ""}${type ? `&type=${type}` : ""}`
     );
 }
 
 export async function getAnimeById(id: number): Promise<JikanAnime> {
-    const data = await jikanFetch<{ data: JikanAnime }>(`/anime/${id}/full`);
+    const data = await rateLimitedFetch<{ data: JikanAnime }>(`/anime/${id}/full`);
     return data.data;
 }
 
 export async function getAnimeCharacters(id: number): Promise<JikanCharacter[]> {
-    const data = await jikanFetch<{ data: JikanCharacter[] }>(`/anime/${id}/characters`);
+    const data = await rateLimitedFetch<{ data: JikanCharacter[] }>(`/anime/${id}/characters`);
     return data.data;
 }
 
 export async function getAnimeEpisodes(id: number): Promise<JikanEpisode[]> {
-    const data = await jikanFetch<{ data: JikanEpisode[] }>(`/anime/${id}/episodes`);
+    const data = await rateLimitedFetch<{ data: JikanEpisode[] }>(`/anime/${id}/episodes`);
     return data.data;
 }
 
 export async function getAnimeRelations(id: number): Promise<JikanRelation[]> {
-    const data = await jikanFetch<{ data: JikanRelation[] }>(`/anime/${id}/relations`);
+    const data = await rateLimitedFetch<{ data: JikanRelation[] }>(`/anime/${id}/relations`);
     return data.data;
 }
 
 export async function getAnimeRecommendations(id: number): Promise<JikanRecommendation[]> {
-    const data = await jikanFetch<{ data: JikanRecommendation[] }>(
+    const data = await rateLimitedFetch<{ data: JikanRecommendation[] }>(
         `/anime/${id}/recommendations`
     );
     return data.data;
@@ -240,10 +239,6 @@ export async function getAnimeRecommendations(id: number): Promise<JikanRecommen
 export { JikanError };
 
 /**
- * Rate-limited version of getAnimeById for sequential enrichment loops.
- * Automatically waits between requests to avoid 429s.
+ * @deprecated Use getAnimeById instead — all calls are now rate-limited.
  */
-export async function getAnimeByIdThrottled(id: number): Promise<JikanAnime> {
-    const data = await rateLimitedFetch<{ data: JikanAnime }>(`/anime/${id}/full`);
-    return data.data;
-}
+export const getAnimeByIdThrottled = getAnimeById;

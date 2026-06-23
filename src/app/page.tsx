@@ -8,7 +8,7 @@ import AnimeCard from "@/components/AnimeCard";
 import AnimeCardSkeleton from "@/components/AnimeCardSkeleton";
 import MostPopularCarousel from "@/components/MostPopularCarousel";
 import TopAnimeRanking from "@/components/TopAnimeRanking";
-import { getTopAnime, getSeasonNow, getAnimeByIdThrottled, fetchSequential, JikanError } from "@/lib/jikan";
+import { getTopAnime, getSeasonNow, getAnimeByIdThrottled, fetchSequential } from "@/lib/jikan";
 import { mapToCardData, deduplicateByMalId } from "@/lib/mappers";
 import { useAuth } from "@/context/AuthContext";
 import { AnimeCardData } from "@/types/anime";
@@ -52,11 +52,11 @@ export default function HomePage() {
     const [topAiring, setTopAiring] = useState<JikanAnime[]>([]);
     const [topPopular, setTopPopular] = useState<JikanAnime[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
 
     const fetchData = async () => {
         setLoading(true);
-        setError(null);
+
+        // Each section fetches independently — a failure in one doesn't block others
         try {
             // Fetch hero animes sequentially (rate-limited)
             const heroResults = await fetchSequential(
@@ -68,31 +68,30 @@ export default function HomePage() {
                 (results) => setHeroAnimes(results)
             );
             setHeroAnimes(heroResults);
+        } catch { /* Hero section fails silently — skeletons stay */ }
 
-            // Fetch popular anime (queue handles rate limiting)
+        try {
+            // Single call for bypopularity — reuse for both carousel (5) and ranking (10)
             const popularResult = await getTopAnime("bypopularity", 16, 1, undefined, !showSensitive);
             const popularUnique = deduplicateByMalId(popularResult.data);
             setPopular(popularUnique.slice(0, 5));
+            setTopPopular(popularUnique.slice(0, 10));
+        } catch { /* Popular section fails silently */ }
 
+        try {
             // Fetch seasonal anime (8 for 4x2 grid)
             const seasonResult = await getSeasonNow(16, 1, !showSensitive);
             const seasonMapped = seasonResult.data.map(mapToCardData);
             const seasonUnique = deduplicateByMalId(seasonMapped);
             setSeason(seasonUnique.slice(0, 8));
+        } catch { /* Season section fails silently */ }
 
-            // Fetch top airing (weekly) and top popular (monthly) for ranking sidebar
+        try {
+            // Fetch top airing (weekly) for ranking sidebar
             const topAiringResult = await getTopAnime("airing", 10, 1, undefined, !showSensitive);
             setTopAiring(topAiringResult.data.slice(0, 10));
+        } catch { /* Ranking section fails silently */ }
 
-            const topPopularResult = await getTopAnime("bypopularity", 10, 1, undefined, !showSensitive);
-            setTopPopular(topPopularResult.data.slice(0, 10));
-        } catch (err) {
-            if (err instanceof JikanError && err.status === 429) {
-                setError(err.message);
-            } else {
-                setError("Error loading anime. Please try again.");
-            }
-        }
         setLoading(false);
     };
 
@@ -114,17 +113,6 @@ export default function HomePage() {
             )}
 
             <main className="max-w-container mx-auto px-6 md:px-10 py-10">
-                {error && (
-                    <div className="mb-8 p-4 bg-red-50 border border-red-200 rounded-2xl text-center">
-                        <p className="text-red-600 text-sm mb-2">{error}</p>
-                        <button
-                            onClick={fetchData}
-                            className="text-sm px-4 py-2 rounded-xl text-white bg-primary hover:bg-primary-hover transition-colors"
-                        >
-                            Retry
-                        </button>
-                    </div>
-                )}
 
                 {/* Season + Top Ranking sidebar */}
                 <section className="mb-12">
