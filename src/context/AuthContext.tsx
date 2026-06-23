@@ -92,17 +92,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return () => subscription.unsubscribe();
     }, [supabase, fetchProfile]);
 
+    // Sync theme from user profile ONLY when logged in with a saved preference.
+    // When logged out, let next-themes handle it naturally (keeps manual toggle working).
     useEffect(() => {
-        if (isLoading) return;
+        if (isLoading || !user || !profile) return;
 
-        if (!user) {
-            setTheme("system");
-            return;
+        if (profile.theme_preference) {
+            setTheme(profile.theme_preference);
         }
-
-        if (!profile) return;
-
-        setTheme(profile.theme_preference ?? "system");
     }, [isLoading, user, profile?.theme_preference, setTheme]);
 
     const signIn = useCallback(
