@@ -82,6 +82,13 @@ export default function AnimeHeroBanner({
     const studio = anime.studios?.[0]?.name || "Unknown";
     const genres = [...(anime.genres || []), ...(anime.themes || [])];
     const isAiring = anime.status === "Currently Airing";
+    const isUpcoming = anime.status === "Not yet aired";
+    const statusLabel = isAiring ? "Airing" : isUpcoming ? "Upcoming" : "Finished";
+    const statusColor = isAiring
+        ? "var(--color-overlay-status-airing)"
+        : isUpcoming
+            ? "rgba(59, 130, 246, 0.7)"
+            : "var(--color-glass-white-18)";
     const posterUrl =
         anime.images?.webp?.large_image_url || anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url || "";
     const ytThumbs = getYouTubeThumbnails(anime.trailer?.embed_url);
@@ -186,13 +193,11 @@ export default function AnimeHeroBanner({
                                 <span
                                     className="text-xs px-2.5 py-1 rounded-full text-white"
                                     style={{
-                                        backgroundColor: isAiring
-                                            ? "var(--color-overlay-status-airing)"
-                                            : "var(--color-glass-white-18)",
+                                        backgroundColor: statusColor,
                                         backdropFilter: "blur(4px)",
                                     }}
                                 >
-                                    {isAiring ? "Airing" : "Finished"}
+                                    {statusLabel}
                                 </span>
                             </div>
 
