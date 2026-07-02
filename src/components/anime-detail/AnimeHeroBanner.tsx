@@ -87,7 +87,7 @@ export default function AnimeHeroBanner({
     const statusColor = isAiring
         ? "var(--color-overlay-status-airing)"
         : isUpcoming
-            ? "rgba(59, 130, 246, 0.7)"
+            ? "var(--color-overlay-status-upcoming)"
             : "var(--color-glass-white-18)";
     const posterUrl =
         anime.images?.webp?.large_image_url || anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url || "";

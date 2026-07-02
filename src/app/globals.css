@@ -118,6 +118,7 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
     --color-glass-white-97: rgba(255, 255, 255, 0.97);
     --color-overlay-back-btn: rgba(0, 0, 0, 0.3);
     --color-overlay-status-airing: rgba(22, 163, 74, 0.7);
+    --color-overlay-status-upcoming: rgba(59, 130, 246, 0.7);
     --color-hero-gradient-right: linear-gradient(to right, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.45) 60%, rgba(0,0,0,0.1) 100%);
     --color-hero-gradient-bottom: linear-gradient(to top, #F9F9F9 0%, rgba(249,249,249,0) 40%);
     --color-surface-hover: #F9FAFB;
