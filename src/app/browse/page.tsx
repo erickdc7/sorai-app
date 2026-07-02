@@ -7,10 +7,11 @@ import Link from "next/link";
 import AnimeCard from "@/components/AnimeCard";
 import AnimeGridSkeleton from "@/components/AnimeGridSkeleton";
 import Pagination from "@/components/Pagination";
-import { getTopAnime, getSeasonNow, getSeasonUpcoming, getSeasonByYear, getAnimeByGenre, JikanError } from "@/lib/jikan";
+import FilterBar, { type ActiveFilters } from "@/components/FilterBar";
+import { getSeasonNow, getSeasonUpcoming, getSeasonByYear, browseAnime, JikanError } from "@/lib/jikan";
+import { TYPE_FILTERS, STATUS_FILTERS, GENRE_FILTERS, DEMOGRAPHIC_FILTERS } from "@/constants/filters";
 import { mapToCardData, deduplicateByMalId } from "@/lib/mappers";
 import { AnimeCardData } from "@/types/anime";
-import { TYPE_FILTERS } from "@/constants/filters";
 import { useAuth } from "@/context/AuthContext";
 
 
@@ -73,6 +74,11 @@ const PAGE_CONFIG: Record<string, { title: string; subtitle: string; icon: React
     },
 };
 
+// Pages that use season endpoints (only support type filter)
+const SEASON_PAGES = ["season", "upcoming", "season-archive"];
+// Pages that are already type-specific — type filter is redundant
+const FORMAT_TYPES = ["ona", "ova", "special", "movies"];
+
 function BrowseContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -82,9 +88,19 @@ function BrowseContent() {
     const seasonYear = searchParams.get("year") ? parseInt(searchParams.get("year")!) : null;
     const seasonName = searchParams.get("season") || null;
 
-    // Read filter and page from URL params
-    const urlFilter = searchParams.get("filter") || "all";
+    // Read filter values from URL params
     const urlPage = parseInt(searchParams.get("page") || "1");
+    const urlTypeFilter = searchParams.get("filter") || "all";
+    const urlDemographic = searchParams.get("demographic") || "all";
+    const urlStatus = searchParams.get("status") || "all";
+
+    // The URL "genre" param can be either a genre or a demographic ID (e.g. from footer links).
+    // Detect which list it belongs to and initialize the correct dropdown.
+    const urlGenreParam = searchParams.get("genre") || "all";
+    const isDemographicId = DEMOGRAPHIC_FILTERS.some((d) => d.value === urlGenreParam);
+    const isGenreId = GENRE_FILTERS.some((g) => g.value === urlGenreParam);
+    const urlGenreFilter = isGenreId ? urlGenreParam : "all";
+    const urlDemographicResolved = isDemographicId ? urlGenreParam : urlDemographic;
 
     const SEASON_ICONS: Record<string, React.ReactNode> = {
         winter: <Snowflake size={18} style={{ color: "var(--color-season-winter)" }} />,
@@ -100,19 +116,21 @@ function BrowseContent() {
         fall: "var(--color-season-fall-bg)",
     };
 
+    const GENRE_NAMES: Record<number, string> = {
+        1: "Action", 2: "Adventure", 4: "Comedy", 8: "Drama",
+        10: "Fantasy", 14: "Horror", 22: "Romance", 24: "Sci-Fi",
+        27: "Shounen", 25: "Shoujo", 36: "Slice of Life", 30: "Sports",
+        7: "Mystery", 37: "Supernatural", 42: "Seinen", 43: "Josei",
+        5: "Avant Garde", 46: "Award Winning", 47: "Gourmet", 41: "Suspense",
+        15: "Kids",
+    };
+
     const seasonArchiveConfig = (type === "season-archive" && seasonYear && seasonName) ? {
         title: `${SEASON_LABELS[seasonName] || seasonName} ${seasonYear}`,
         subtitle: `Anime from the ${SEASON_LABELS[seasonName] || seasonName} ${seasonYear} season`,
         icon: SEASON_ICONS[seasonName] || <CalendarDays size={18} style={{ color: "var(--color-primary)" }} />,
         iconBg: SEASON_ICON_BG[seasonName] || "var(--color-primary-light)",
     } : null;
-
-    const GENRE_NAMES: Record<number, string> = {
-        1: "Action", 2: "Adventure", 4: "Comedy", 8: "Drama",
-        10: "Fantasy", 14: "Horror", 22: "Romance", 24: "Sci-Fi",
-        27: "Shounen", 25: "Shoujo", 36: "Slice of Life", 30: "Sports",
-        7: "Mystery", 37: "Supernatural",
-    };
 
     const genreConfig = genreId ? {
         title: GENRE_NAMES[genreId] || "Genre",
@@ -123,54 +141,103 @@ function BrowseContent() {
 
     const config = seasonArchiveConfig || genreConfig || PAGE_CONFIG[type] || PAGE_CONFIG.popular;
 
-    // Pages that are already type-specific — no filter needed
-    const FORMAT_TYPES = ["ona", "ova", "special", "movies"];
-    const showTypeFilter = !FORMAT_TYPES.includes(type);
+    // Determine which filters to show
+    const isSeasonPage = SEASON_PAGES.includes(type);
+    const isFormatPage = FORMAT_TYPES.includes(type);
+    // Season endpoints only support type filter; format pages already have type locked
+    const visibleFilters: Array<"type" | "genre" | "demographic" | "status"> = isSeasonPage
+        ? ["type"]
+        : isFormatPage
+            ? ["genre", "demographic", "status"]
+            : ["genre", "demographic", "type", "status"];
 
-
+    // Can we use the full /anime endpoint? (supports all filters)
+    // Season pages must use their specific endpoints which don't support genre/status
+    const canUseFullFilters = !isSeasonPage;
 
     const [results, setResults] = useState<AnimeCardData[]>([]);
     const [currentPage, setCurrentPage] = useState(urlPage);
     const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [typeFilter, setTypeFilter] = useState<string>(urlFilter);
+    const [filters, setFilters] = useState<ActiveFilters>({
+        type: urlTypeFilter,
+        genre: urlGenreFilter,
+        demographic: urlDemographicResolved,
+        status: urlStatus,
+    });
     const { profile } = useAuth();
     const showSensitive = profile?.show_sensitive_content ?? false;
     const sfw = !showSensitive;
 
     const DISPLAY_LIMIT = 12;
-    const FETCH_LIMIT = 16; // overfetch to compensate for API duplicates
+    const FETCH_LIMIT = 16;
 
     const fetchData = useCallback(
-        async (page: number, filterType: string = typeFilter) => {
+        async (page: number, activeFilters: ActiveFilters = filters) => {
             setLoading(true);
             setError(null);
-            const apiType = filterType === "all" ? undefined : filterType;
+            const apiType = activeFilters.type === "all" ? undefined : activeFilters.type;
+            const apiGenre = activeFilters.genre === "all" ? undefined : activeFilters.genre;
+            const apiDemographic = activeFilters.demographic === "all" ? undefined : activeFilters.demographic;
+            const apiStatus = activeFilters.status === "all" ? undefined : activeFilters.status;
+
+            // Combine genre + demographic into a single genres param (comma-separated for Jikan)
+            const genreIds = [apiGenre, apiDemographic].filter(Boolean).join(",") || undefined;
+
             try {
                 let result;
-                if (genreId) {
-                    result = await getAnimeByGenre(genreId, FETCH_LIMIT, page, sfw, apiType);
-                } else if (type === "season-archive" && seasonYear && seasonName) {
-                    result = await getSeasonByYear(seasonYear, seasonName, FETCH_LIMIT, page, sfw, apiType);
-                } else if (type === "season") {
-                    result = await getSeasonNow(FETCH_LIMIT, page, sfw, apiType);
-                } else if (type === "upcoming") {
-                    result = await getSeasonUpcoming(FETCH_LIMIT, page, sfw, apiType);
+
+                if (isSeasonPage) {
+                    // Season endpoints only support type filter
+                    if (type === "season-archive" && seasonYear && seasonName) {
+                        result = await getSeasonByYear(seasonYear, seasonName, FETCH_LIMIT, page, sfw, apiType);
+                    } else if (type === "upcoming") {
+                        result = await getSeasonUpcoming(FETCH_LIMIT, page, sfw, apiType);
+                    } else {
+                        result = await getSeasonNow(FETCH_LIMIT, page, sfw, apiType);
+                    }
                 } else if (type === "movies") {
-                    result = await getTopAnime("bypopularity", FETCH_LIMIT, page, "movie", sfw);
-                } else if (type === "airing") {
-                    result = await getTopAnime("airing", FETCH_LIMIT, page, apiType, sfw);
+                    // Movies page — type is locked to "movie"
+                    result = await browseAnime(
+                        { orderBy: "popularity", sort: "asc", type: "movie", genres: genreIds, status: apiStatus },
+                        FETCH_LIMIT, page, sfw
+                    );
                 } else if (type === "ona") {
-                    result = await getTopAnime("bypopularity", FETCH_LIMIT, page, "ona", sfw);
+                    result = await browseAnime(
+                        { orderBy: "popularity", sort: "asc", type: "ona", genres: genreIds, status: apiStatus },
+                        FETCH_LIMIT, page, sfw
+                    );
                 } else if (type === "ova") {
-                    result = await getTopAnime("bypopularity", FETCH_LIMIT, page, "ova", sfw);
+                    result = await browseAnime(
+                        { orderBy: "popularity", sort: "asc", type: "ova", genres: genreIds, status: apiStatus },
+                        FETCH_LIMIT, page, sfw
+                    );
                 } else if (type === "special") {
-                    result = await getTopAnime("bypopularity", FETCH_LIMIT, page, "special", sfw);
+                    result = await browseAnime(
+                        { orderBy: "popularity", sort: "asc", type: "special", genres: genreIds, status: apiStatus },
+                        FETCH_LIMIT, page, sfw
+                    );
+                } else if (type === "airing") {
+                    result = await browseAnime(
+                        { orderBy: "popularity", sort: "asc", status: apiStatus || "airing", type: apiType, genres: genreIds },
+                        FETCH_LIMIT, page, sfw
+                    );
+                } else if (genreId && !genreIds) {
+                    // Coming from footer genre link with no extra filters
+                    result = await browseAnime(
+                        { orderBy: "members", sort: "desc", genres: String(genreId), type: apiType, status: apiStatus },
+                        FETCH_LIMIT, page, sfw
+                    );
                 } else {
-                    // popular
-                    result = await getTopAnime("bypopularity", FETCH_LIMIT, page, apiType, sfw);
+                    // popular (default) or genre browse with filters
+                    const genres = genreIds || (genreId ? String(genreId) : undefined);
+                    result = await browseAnime(
+                        { orderBy: "popularity", sort: "asc", type: apiType, genres, status: apiStatus },
+                        FETCH_LIMIT, page, sfw
+                    );
                 }
+
                 const mapped = result.data.map(mapToCardData);
                 const unique = deduplicateByMalId(mapped);
                 setResults(unique.slice(0, DISPLAY_LIMIT));
@@ -185,32 +252,42 @@ function BrowseContent() {
             }
             setLoading(false);
         },
-        [type, genreId, seasonYear, seasonName, sfw, typeFilter]
+        [type, genreId, seasonYear, seasonName, sfw, filters, isSeasonPage]
     );
 
-    // Build URL with current params + filter/page overrides
-    const buildUrl = useCallback((overrides: { filter?: string; page?: number }) => {
-        const params = new URLSearchParams(searchParams.toString());
-        const f = overrides.filter ?? typeFilter;
-        const p = overrides.page ?? currentPage;
-        if (f && f !== "all") params.set("filter", f); else params.delete("filter");
-        if (p > 1) params.set("page", String(p)); else params.delete("page");
-        return `/browse?${params.toString()}`;
-    }, [searchParams, typeFilter, currentPage]);
+    // Build URL with current params + filter overrides
+    const buildUrl = useCallback((overrides: { filters?: ActiveFilters; page?: number }) => {
+        const params = new URLSearchParams();
+        // Preserve base params
+        if (type !== "popular") params.set("type", type);
+        if (genreId && !overrides.filters?.genre) params.set("genre", String(genreId));
+        if (seasonYear) params.set("year", String(seasonYear));
+        if (seasonName) params.set("season", seasonName);
 
-    // Initial fetch on mount (reads from URL)
+        const f = overrides.filters ?? filters;
+        const p = overrides.page ?? currentPage;
+
+        if (f.type && f.type !== "all") params.set("filter", f.type);
+        if (f.genre && f.genre !== "all") params.set("genre", f.genre);
+        if (f.demographic && f.demographic !== "all") params.set("demographic", f.demographic);
+        if (f.status && f.status !== "all") params.set("status", f.status);
+        if (p > 1) params.set("page", String(p));
+
+        return `/browse?${params.toString()}`;
+    }, [type, genreId, seasonYear, seasonName, filters, currentPage]);
+
+    // Initial fetch on mount
     useEffect(() => {
         setResults([]);
-        fetchData(urlPage, urlFilter);
+        fetchData(urlPage, filters);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [sfw]);
 
-    const handleFilterChange = (filter: string) => {
-        if (filter === typeFilter) return;
-        setTypeFilter(filter);
+    const handleFilterChange = (newFilters: ActiveFilters) => {
+        setFilters(newFilters);
         setCurrentPage(1);
-        fetchData(1, filter);
-        router.push(buildUrl({ filter, page: 1 }), { scroll: false });
+        fetchData(1, newFilters);
+        router.push(buildUrl({ filters: newFilters, page: 1 }), { scroll: false });
     };
 
     const handlePageChange = (page: number) => {
@@ -254,34 +331,18 @@ function BrowseContent() {
                 </p>
             </div>
 
-            {/* Type Filters */}
-            {showTypeFilter && (
-                <div className="flex flex-wrap gap-2 mb-8">
-                    {TYPE_FILTERS.map((filter) => (
-                        <button
-                            key={filter.value}
-                            onClick={() => handleFilterChange(filter.value)}
-                            className="px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200"
-                            style={{
-                                backgroundColor: typeFilter === filter.value
-                                    ? "var(--color-primary)"
-                                    : "var(--color-surface)",
-                                color: typeFilter === filter.value
-                                    ? "white"
-                                    : "var(--color-text-secondary)",
-                                boxShadow: typeFilter === filter.value
-                                    ? "var(--shadow-card-hover)"
-                                    : "var(--shadow-soft)",
-                                border: typeFilter === filter.value
-                                    ? "1px solid var(--color-primary)"
-                                    : "1px solid var(--color-border)",
-                            }}
-                        >
-                            {filter.label}
-                        </button>
-                    ))}
-                </div>
-            )}
+            {/* Filter Bar */}
+            <div className="mb-8">
+                <FilterBar
+                    filters={filters}
+                    onChange={handleFilterChange}
+                    visibleFilters={visibleFilters}
+                    typeOptions={TYPE_FILTERS}
+                    genreOptions={canUseFullFilters ? GENRE_FILTERS : []}
+                    demographicOptions={canUseFullFilters ? DEMOGRAPHIC_FILTERS : []}
+                    statusOptions={canUseFullFilters ? STATUS_FILTERS : []}
+                />
+            </div>
 
             {/* Error */}
             {error && (

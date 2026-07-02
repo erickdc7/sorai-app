@@ -162,7 +162,7 @@ export default function AnimeHeroBanner({
                         <div className="flex-1 pb-2">
                             {/* Badges */}
                             <div className="flex flex-wrap gap-2 mb-3">
-                                {anime.rank && (
+                                {anime.rank > 0 && (
                                     <span
                                         className="text-xs px-2.5 py-1 rounded-full text-white"
                                         style={{
@@ -192,7 +192,7 @@ export default function AnimeHeroBanner({
                                         backdropFilter: "blur(4px)",
                                     }}
                                 >
-                                    {isAiring ? "● Airing" : "Finished"}
+                                    {isAiring ? "Airing" : "Finished"}
                                 </span>
                             </div>
 

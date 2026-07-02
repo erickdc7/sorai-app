@@ -202,11 +202,16 @@ export async function searchAnime(
     page: number = 1,
     limit: number = 16,
     sfw: boolean = true,
-    type?: string
+    type?: string,
+    genres?: string,
+    status?: string
 ): Promise<JikanPaginatedResponse<JikanAnime>> {
-    return rateLimitedFetch<JikanPaginatedResponse<JikanAnime>>(
-        `/anime?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}${sfw ? "&sfw" : ""}${type ? `&type=${type}` : ""}`
-    );
+    let url = `/anime?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}`;
+    if (sfw) url += "&sfw";
+    if (type) url += `&type=${type}`;
+    if (genres) url += `&genres=${genres}`;
+    if (status) url += `&status=${status}`;
+    return rateLimitedFetch<JikanPaginatedResponse<JikanAnime>>(url);
 }
 
 export async function getAnimeById(id: number): Promise<JikanAnime> {
@@ -242,3 +247,33 @@ export { JikanError };
  * @deprecated Use getAnimeById instead — all calls are now rate-limited.
  */
 export const getAnimeByIdThrottled = getAnimeById;
+
+/** Combined filter options for the /anime endpoint. */
+export interface BrowseFilters {
+    genres?: string;
+    type?: string;
+    status?: string;
+    orderBy?: string;
+    sort?: string;
+}
+
+/**
+ * Generic browse/search using the /anime endpoint which supports
+ * all filter combinations (genres, type, status, order_by).
+ * Used for Popular, Top Airing, and Genre browse when multi-filtering.
+ */
+export async function browseAnime(
+    filters: BrowseFilters,
+    limit: number = 16,
+    page: number = 1,
+    sfw: boolean = true
+): Promise<JikanPaginatedResponse<JikanAnime>> {
+    let url = `/anime?limit=${limit}&page=${page}`;
+    if (sfw) url += "&sfw";
+    if (filters.genres) url += `&genres=${filters.genres}`;
+    if (filters.type) url += `&type=${filters.type}`;
+    if (filters.status) url += `&status=${filters.status}`;
+    if (filters.orderBy) url += `&order_by=${filters.orderBy}`;
+    if (filters.sort) url += `&sort=${filters.sort}`;
+    return rateLimitedFetch<JikanPaginatedResponse<JikanAnime>>(url);
+}

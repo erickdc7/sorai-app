@@ -6,10 +6,11 @@ import { Search as SearchIcon } from "lucide-react";
 import AnimeCard from "@/components/AnimeCard";
 import AnimeGridSkeleton from "@/components/AnimeGridSkeleton";
 import Pagination from "@/components/Pagination";
+import FilterBar, { ActiveFilters, DEFAULT_FILTERS } from "@/components/FilterBar";
 import { searchAnime, JikanError } from "@/lib/jikan";
+import { TYPE_FILTERS, STATUS_FILTERS, GENRE_FILTERS, DEMOGRAPHIC_FILTERS } from "@/constants/filters";
 import { mapToCardData, deduplicateByMalId } from "@/lib/mappers";
 import { AnimeCardData } from "@/types/anime";
-import { TYPE_FILTERS } from "@/constants/filters";
 import { useAuth } from "@/context/AuthContext";
 
 function SearchContent() {
@@ -17,15 +18,24 @@ function SearchContent() {
     const router = useRouter();
     const { profile } = useAuth();
     const query = searchParams.get("q") || "";
-    const urlFilter = searchParams.get("filter") || "all";
     const urlPage = parseInt(searchParams.get("page") || "1");
+    const urlTypeFilter = searchParams.get("filter") || "all";
+    const urlGenreFilter = searchParams.get("genre") || "all";
+    const urlDemographic = searchParams.get("demographic") || "all";
+    const urlStatus = searchParams.get("status") || "all";
     const showSensitive = profile?.show_sensitive_content ?? false;
+
     const [results, setResults] = useState<AnimeCardData[]>([]);
     const [currentPage, setCurrentPage] = useState(urlPage);
     const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [typeFilter, setTypeFilter] = useState<string>(urlFilter);
+    const [filters, setFilters] = useState<ActiveFilters>({
+        type: urlTypeFilter,
+        genre: urlGenreFilter,
+        demographic: urlDemographic,
+        status: urlStatus,
+    });
     const debounceRef = useRef<ReturnType<typeof setTimeout>>();
     const prevQueryRef = useRef(query);
 
@@ -40,17 +50,24 @@ function SearchContent() {
         return `More than ${rounded} results`;
     };
 
-    const buildUrl = useCallback((overrides: { filter?: string; page?: number }) => {
-        const params = new URLSearchParams(searchParams.toString());
-        const f = overrides.filter ?? typeFilter;
+    const buildUrl = useCallback((overrides: { filters?: ActiveFilters; page?: number }) => {
+        const params = new URLSearchParams();
+        if (query) params.set("q", query);
+
+        const f = overrides.filters ?? filters;
         const p = overrides.page ?? currentPage;
-        if (f && f !== "all") params.set("filter", f); else params.delete("filter");
-        if (p > 1) params.set("page", String(p)); else params.delete("page");
+
+        if (f.type && f.type !== "all") params.set("filter", f.type);
+        if (f.genre && f.genre !== "all") params.set("genre", f.genre);
+        if (f.demographic && f.demographic !== "all") params.set("demographic", f.demographic);
+        if (f.status && f.status !== "all") params.set("status", f.status);
+        if (p > 1) params.set("page", String(p));
+
         return `/search?${params.toString()}`;
-    }, [searchParams, typeFilter, currentPage]);
+    }, [query, filters, currentPage]);
 
     const fetchResults = useCallback(
-        async (page: number, type: string = typeFilter) => {
+        async (page: number, activeFilters: ActiveFilters = filters) => {
             if (!query) {
                 setResults([]);
                 setTotalPages(1);
@@ -59,9 +76,14 @@ function SearchContent() {
 
             setLoading(true);
             setError(null);
+            const apiType = activeFilters.type === "all" ? undefined : activeFilters.type;
+            const apiGenre = activeFilters.genre === "all" ? undefined : activeFilters.genre;
+            const apiDemographic = activeFilters.demographic === "all" ? undefined : activeFilters.demographic;
+            const apiStatus = activeFilters.status === "all" ? undefined : activeFilters.status;
+            const genreIds = [apiGenre, apiDemographic].filter(Boolean).join(",") || undefined;
+
             try {
-                const apiType = type === "all" ? undefined : type;
-                const data = await searchAnime(query, page, FETCH_LIMIT, !showSensitive, apiType);
+                const data = await searchAnime(query, page, FETCH_LIMIT, !showSensitive, apiType, genreIds, apiStatus);
                 const mapped = data.data.map(mapToCardData);
                 const unique = deduplicateByMalId(mapped);
                 setResults(unique.slice(0, DISPLAY_LIMIT));
@@ -76,28 +98,27 @@ function SearchContent() {
             }
             setLoading(false);
         },
-        [query, showSensitive, typeFilter]
+        [query, showSensitive, filters]
     );
 
-    // Reset filter/page only when the search query itself changes
+    // Reset filters when the search query changes
     useEffect(() => {
         if (prevQueryRef.current !== query) {
             prevQueryRef.current = query;
             setCurrentPage(1);
-            setTypeFilter("all");
-            fetchResults(1, "all");
+            setFilters({ ...DEFAULT_FILTERS });
+            fetchResults(1, { ...DEFAULT_FILTERS });
         } else {
-            fetchResults(urlPage, urlFilter);
+            fetchResults(urlPage, filters);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [query, showSensitive]);
 
-    const handleFilterChange = (type: string) => {
-        if (type === typeFilter) return;
-        setTypeFilter(type);
+    const handleFilterChange = (newFilters: ActiveFilters) => {
+        setFilters(newFilters);
         setCurrentPage(1);
-        fetchResults(1, type);
-        router.push(buildUrl({ filter: type, page: 1 }), { scroll: false });
+        fetchResults(1, newFilters);
+        router.push(buildUrl({ filters: newFilters, page: 1 }), { scroll: false });
     };
 
     const handlePageChange = (page: number) => {
@@ -140,32 +161,18 @@ function SearchContent() {
                 )}
             </div>
 
-            {/* Type Filters */}
+            {/* Filter Bar */}
             {query && (
-                <div className="flex flex-wrap gap-2 mb-8">
-                    {TYPE_FILTERS.map((filter) => (
-                        <button
-                            key={filter.value}
-                            onClick={() => handleFilterChange(filter.value)}
-                            className="px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200"
-                            style={{
-                                backgroundColor: typeFilter === filter.value
-                                    ? "var(--color-primary)"
-                                    : "var(--color-surface)",
-                                color: typeFilter === filter.value
-                                    ? "white"
-                                    : "var(--color-text-secondary)",
-                                boxShadow: typeFilter === filter.value
-                                    ? "var(--shadow-card-hover)"
-                                    : "var(--shadow-soft)",
-                                border: typeFilter === filter.value
-                                    ? "1px solid var(--color-primary)"
-                                    : "1px solid var(--color-border)",
-                            }}
-                        >
-                            {filter.label}
-                        </button>
-                    ))}
+                <div className="mb-8">
+                    <FilterBar
+                        filters={filters}
+                        onChange={handleFilterChange}
+                        visibleFilters={["genre", "demographic", "type", "status"]}
+                        typeOptions={TYPE_FILTERS}
+                        genreOptions={GENRE_FILTERS}
+                        demographicOptions={DEMOGRAPHIC_FILTERS}
+                        statusOptions={STATUS_FILTERS}
+                    />
                 </div>
             )}
 
@@ -210,7 +217,7 @@ function SearchContent() {
                         No results
                     </h3>
                     <p className="text-gray-400 text-sm">
-                        No results found for &ldquo;{query}&rdquo;{typeFilter !== "all" ? ` with type "${TYPE_FILTERS.find(f => f.value === typeFilter)?.label}"` : ""}
+                        No results found for &ldquo;{query}&rdquo;
                     </p>
                 </div>
             ) : null}
