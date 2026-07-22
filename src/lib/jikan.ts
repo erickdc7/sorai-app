@@ -7,7 +7,7 @@ import type {
     JikanPaginatedResponse,
 } from "@/types/jikan";
 
-const JIKAN_BASE = "https://api.jikan.moe/v4";
+const JIKAN_BASE = "https://api.tenrai.org/v1";
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
 class JikanError extends Error {

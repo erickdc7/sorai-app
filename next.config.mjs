@@ -50,7 +50,7 @@ const nextConfig = {
                             "font-src 'self' https://fonts.gstatic.com",
                             "img-src 'self' data: https://cdn.myanimelist.net https://myanimelist.net https://img.youtube.com https://*.supabase.co",
                             "frame-src https://www.youtube.com https://www.youtube-nocookie.com",
-                            "connect-src 'self' https://*.supabase.co https://api.jikan.moe",
+                            "connect-src 'self' https://*.supabase.co https://api.tenrai.org",
                         ].join('; '),
                     },
                 ],
