@@ -1,6 +1,6 @@
 # Sorai — Your Personal Anime Tracker
 
-A modern, full-stack web application to explore, search, and organize your personal anime list. Built with Next.js 14, Supabase, and the Jikan API.
+A modern, full-stack web application to explore, search, and organize your personal anime list. Built with Next.js 14, Supabase, and the Tenrai API.
 
 ![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
@@ -35,12 +35,12 @@ A modern, full-stack web application to explore, search, and organize your perso
 ### User Settings
 - Profile management: avatar upload/remove, username and email update
 - Password change
-- Sensitive content toggle (integrates with Jikan API `sfw` parameter)
+- Sensitive content toggle (integrates with Tenrai API `sfw` parameter)
 - Data export (JSON) of your full anime list
 - Account deactivation
 
 ### Performance & Reliability
-- **Rate-Limited Fetch Queue** — Automatic request throttling (~3 req/s) prevents 429 errors from the Jikan API
+- **Rate-Limited Fetch Queue** — Automatic request throttling (~3 req/s) prevents 429 errors from the Tenrai API
 - **API Caching** — `sessionStorage` caching layer with 10-minute TTL
 - **Progressive Loading** — Skeleton states and `fetchSequential` with `onProgress` callbacks for incremental UI updates
 - **Deduplication** — Overfetch + dedup logic ensures unique cards per page
@@ -64,7 +64,7 @@ A modern, full-stack web application to explore, search, and organize your perso
 | [TypeScript](https://www.typescriptlang.org/) | Static type checking |
 | [Tailwind CSS 3](https://tailwindcss.com/) | Utility-first styling with CSS custom properties |
 | [Supabase](https://supabase.com/) | PostgreSQL database + Authentication + Storage |
-| [Jikan API v4](https://jikan.moe/) | Anime data from MyAnimeList — no API key required |
+| [Tenrai API v1](https://tenrai.org/) | Anime data from MyAnimeList — no API key required |
 | [Lucide React](https://lucide.dev/) | Icon library |
 | [Sonner](https://sonner.emilkowal.dev/) | Toast notifications |
 
@@ -128,7 +128,7 @@ src/
 │
 ├── lib/
 │   ├── supabase.ts                 # Supabase client (lazy singleton)
-│   ├── jikan.ts                    # Jikan API wrapper with cache & rate limiting
+│   ├── jikan.ts                    # Tenrai API wrapper with cache & rate limiting
 │   ├── mappers.ts                  # Data transformation (mapToCardData, dedup)
 │   ├── rate-limit.ts               # API rate limit middleware
 │   ├── user-anime-list.ts          # CRUD operations for user anime list
@@ -251,13 +251,13 @@ npm start
 
 ## External APIs
 
-### Jikan API v4
+### Tenrai API v1
 
 | | |
 |---|---|
-| **Base URL** | `https://api.jikan.moe/v4` |
+| **Base URL** | `https://api.tenrai.org/v1` |
 | **Authentication** | None (free public API) |
-| **Rate Limit** | 3 req/s — handled with built-in rate-limiting fetch queue |
+| **Rate Limit** | ~3 req/s — handled with built-in rate-limiting fetch queue |
 
 **Endpoints used:**
 
@@ -340,14 +340,14 @@ AuthContext (Supabase singleton + user state)
     │   ├── useAnimeDetail — core + relations + recommendations
     │   └── useAnimeListActions — add / update / remove with optimistic updates
     └── lib/ handles API communication
-        ├── jikan.ts — cached, rate-limited Jikan API calls
+        ├── jikan.ts — cached, rate-limited Tenrai API calls
         ├── user-anime-list.ts — Supabase CRUD
         └── user-profile.ts — profile management
 ```
 
 ### Rate Limiting Strategy
 
-The Jikan API allows ~3 requests per second. Sorai handles this with:
+The Tenrai API allows ~3 requests per second. Sorai handles this with:
 
 1. **`sessionStorage` cache** (10-min TTL) — avoids redundant requests entirely
 2. **`rateLimitedFetch()`** — enforces a minimum 334ms gap between API calls
@@ -384,4 +384,4 @@ All colors are defined as CSS custom properties in `globals.css` for consistency
 
 ## License
 
-This project is for personal and educational use. Anime data is provided by the [Jikan API](https://jikan.moe/) (unofficial MyAnimeList API).
+This project is for personal and educational use. Anime data is provided by the [Tenrai API](https://tenrai.org/) (unofficial MyAnimeList API).
