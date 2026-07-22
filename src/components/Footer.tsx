@@ -115,12 +115,12 @@ export default function Footer() {
                     <span>
                         Powered by{" "}
                         <a
-                            href="https://jikan.moe"
+                            href="https://tenrai.org"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-gray-400 hover:text-white transition-colors underline underline-offset-2"
                         >
-                            Jikan API
+                            Tenrai API
                         </a>
                     </span>
                     <span>© 2026 Sorai. All rights reserved.</span>
